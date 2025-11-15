@@ -136,6 +136,25 @@ export const getJobsFromDB = async (): Promise<Job[]> => {
 };
 
 /**
+ * Crea un nuevo documento en la colección 'groups'.
+ * El creador cuenta como el primer miembro.
+ */
+export const createGroupInDB = async (groupData: any) => {
+  try {
+    const docRef = await addDoc(collection(db, GROUPS_COLLECTION), {
+      ...groupData,
+      members: 1, // El creador es el 1er miembro
+      createdAt: Timestamp.now()
+    });
+    // Devuelve el objeto completo para actualizar el estado local
+    return { id: docRef.id, ...groupData, members: 1 };
+  } catch (error) {
+    console.error("Error creando grupo:", error);
+    throw new Error("Error en Firebase al crear grupo.");
+  }
+};
+
+/**
  * Obtiene todos los grupos de la base de datos, ordenados por fecha de creación.
  */
 export const getGroupsFromDB = async (): Promise<Grupo[]> => {

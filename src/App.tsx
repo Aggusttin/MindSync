@@ -38,6 +38,7 @@ export default function App() {
     resources, 
     addEvent, 
     addJob, 
+    addGroup, // Obtiene la nueva función
     loading 
   } = useSystemState();
 
@@ -115,7 +116,6 @@ export default function App() {
       return (
         <div className="min-h-screen flex items-center justify-center">
           <p>Cargando datos...</p>
-          {/* Aquí podrías poner un componente <Spinner /> */}
         </div>
       );
     }
@@ -129,10 +129,11 @@ export default function App() {
             userData={userData} 
             authData={authData} 
             onLogout={handleLogout}
-            allEvents={events}     // Pasa eventos
-            allJobs={jobs}         // Pasa trabajos
-            allGroups={groups}     // Pasa grupos
-            allResources={resources} // Pasa recursos
+            allEvents={events}       // Pasa eventos
+            allJobs={jobs}           // Pasa trabajos
+            allGroups={groups}       // Pasa grupos
+            allResources={resources}   // Pasa recursos
+            onAddGroup={addGroup}    // Pasa función de crear grupo
           />
         </>
       );

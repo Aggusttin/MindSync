@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { Evento, Job, Grupo, Recurso } from '../lib/types'; // Importa todos los tipos
 import { 
   createEventInDB, 
-  createJobInDB, 
+  createJobInDB,
+  createGroupInDB, // Importa la nueva función
   getEventsFromDB, 
   getJobsFromDB,
   getGroupsFromDB, // Importa la nueva función
@@ -15,7 +16,7 @@ import { toast } from 'sonner';
 /**
  * Este es el "cerebro" de la demo.
  * Carga todos los datos de Firebase una vez y los mantiene en el estado de React.
- * Proporciona funciones para agregar nuevos datos (eventos, trabajos).
+ * Proporciona funciones para agregar nuevos datos.
  */
 export function useSystemState() {
   const [events, setEvents] = useState<Evento[]>([]);
@@ -81,6 +82,19 @@ export function useSystemState() {
       return false;
     }
   };
+  
+  // Función para que el Estudiante cree un grupo
+  const addGroup = async (newGroupData: any) => {
+    try {
+      const savedGroup = await createGroupInDB(newGroupData);
+      // Actualiza el estado local para que se vea el cambio al instante
+      setGroups(prev => [savedGroup as Grupo, ...prev]); 
+      return true;
+    } catch (error) {
+      toast.error("No se pudo crear el grupo");
+      return false;
+    }
+  };
 
   return {
     events,
@@ -89,6 +103,7 @@ export function useSystemState() {
     resources,  // Retorna los recursos
     addEvent,
     addJob,
+    addGroup,   // Retorna la función de crear grupo
     loading
   };
 }
