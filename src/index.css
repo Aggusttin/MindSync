@@ -1,0 +1,6 @@
+/* Importamos las variables de diseño PRIMERO */
+@import './globals.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
