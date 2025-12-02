@@ -1,3 +1,5 @@
+// src/components/auth/Login.tsx
+
 import { useState } from 'react';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
 import { LogoIcon } from '../Logo';
@@ -23,9 +25,7 @@ export function Login({ onLogin, onSwitchToRegister }: Props) {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // --- NUEVA FUNCIÓN DE VALIDACIÓN ---
   const validateEmail = (email: string) => {
-    // Esta es una expresión regular (RegEx) simple para validar el formato de un email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
@@ -34,24 +34,20 @@ export function Login({ onLogin, onSwitchToRegister }: Props) {
     e.preventDefault();
     setError('');
 
-    // --- 1. VALIDACIÓN DE CAMPOS VACÍOS ---
     if (!email || !password) {
       setError('Por favor completa todos los campos');
       return;
     }
 
-    // --- 2. NUEVA VALIDACIÓN DE FORMATO DE EMAIL ---
     if (!validateEmail(email)) {
-      setError('Por favor ingresa un formato de email válido (ej: tu@email.com)');
+      setError('Por favor ingresa un formato de email válido');
       return;
     }
     
     setIsLoading(true);
 
     try {
-      // --- 3. LÓGICA DE LOGIN REAL (reemplaza la simulación) ---
-
-      // Intenta iniciar sesión con Firebase Auth
+      // 1. Autenticación con Firebase Auth
       const userCredential = await signInWithEmailAndPassword(
         auth, 
         email, 
@@ -59,33 +55,53 @@ export function Login({ onLogin, onSwitchToRegister }: Props) {
       );
       
       const user = userCredential.user;
-      toast.success("¡Inicio de sesión exitoso!");
-
-      // Obtiene los datos del rol (estudiante, empresa) de Firestore
+      
+      // 2. Obtener datos del perfil de Firestore
       const userData = await getUserDataFromDB(user.email!);
 
       if (!userData) {
         throw new Error("No se encontraron datos de perfil para este usuario.");
       }
 
-      // Llama a onLogin con los datos REALES
-      onLogin({
+      console.log("Datos crudos de DB:", userData); // Para depuración
+
+      // --- CORRECCIÓN CLAVE ---
+      // Detectamos si el usuario tiene guardado 'role' (viejo) o 'userType' (nuevo)
+      const detectedRole = userData.userType || userData.role;
+
+      if (!detectedRole) {
+        throw new Error("El usuario no tiene un rol asignado en la base de datos.");
+      }
+
+      // Construimos el objeto final con TODOS los datos
+      const finalUserData: AuthData = {
+        // Primero copiamos TODO lo que viene de la DB (esto incluye learningStyle, etc.)
+        ...userData,
+        // Luego aseguramos los campos críticos
         email: user.email!,
+        userType: detectedRole, // Usamos el rol detectado
         name: userData.name,
-        userType: userData.userType,
         institutionName: userData.institutionName,
-      });
+      };
+
+      console.log("Usuario logueado final:", finalUserData); // Para depuración
+      
+      toast.success("¡Inicio de sesión exitoso!");
+      
+      // Enviamos el objeto completo a App.tsx
+      onLogin(finalUserData);
 
     } catch (err: any) {
       console.error(err);
       
-      // --- 4. MANEJO DE ERRORES MEJORADO ---
       if (err.code === 'auth/invalid-email') {
         setError("El formato del email no es válido.");
       } else if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
         setError("Email o contraseña incorrectos.");
+      } else if (err.message) {
+        setError(err.message);
       } else {
-        setError("Error al iniciar sesión. Revisa la consola.");
+        setError("Error al iniciar sesión.");
       }
       toast.error("Error al iniciar sesión");
     } finally {
@@ -138,8 +154,6 @@ export function Login({ onLogin, onSwitchToRegister }: Props) {
           </button>
         </p>
       </div>
-      
-      {/* ... (El bloque de "Demo Rápida" se mantiene igual) ... */}
     </div>
   );
 }

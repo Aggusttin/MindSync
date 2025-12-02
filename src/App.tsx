@@ -1,4 +1,4 @@
-// --- CÓDIGO CORREGIDO: App.tsx ---
+// src/App.tsx
 
 import { useState } from 'react';
 import { Toaster } from './components/ui/sonner';
@@ -16,21 +16,18 @@ import { StudentDashboard } from './components/dashboard/StudentDashboard';
 import { UniversityDashboard } from './components/dashboard/UniversityDashboard';
 import { CompanyDashboard } from './components/dashboard/CompanyDashboard';
 
-// Importa el "Cerebro" y todos los tipos
 import { useSystemState } from './hooks/useSystemState'; 
-import { AuthData, OnboardingData, Evento, Job, Grupo, Recurso } from './lib/types'; 
+import { AuthData, OnboardingData } from './lib/types'; 
 
 type AppView = 'landing' | 'auth' | 'onboarding' | 'dashboard';
 
 export default function App() {
-  // State de Vistas
   const [view, setView] = useState<AppView>('landing');
   
   // State de Sesión
   const [userData, setUserData] = useState<OnboardingData | null>(null);
   const [authData, setAuthData] = useState<AuthData | null>(null);
 
-  // Llama al "Cerebro" de Datos y obtén todo
   const { 
     events, 
     jobs, 
@@ -38,12 +35,10 @@ export default function App() {
     resources, 
     addEvent, 
     addJob, 
-    addGroup, // Obtiene la nueva función
+    addGroup, 
     loading 
   } = useSystemState();
 
-  // --- Handlers de Vistas ---
-  
   const handleStartOnboarding = () => {
     setView('onboarding');
   };
@@ -53,24 +48,23 @@ export default function App() {
   };
 
   const handleLogin = (data: AuthData) => {
+    console.log("App recibió login:", data); // Debug
     setAuthData(data);
     
-    // Asumimos que 'data' (que viene de getUserDataFromDB) contiene el perfil completo
+    // Al usar ...userData en Login, 'data' ahora tiene todo el perfil
     const fullUserData = data as OnboardingData; 
     setUserData(fullUserData);
 
-    // Si es estudiante Y no ha completado el onboarding, lo enviamos allí
-    if (data.userType === 'estudiante' && !fullUserData.onboardingCompleted) {
+    // Lógica de redirección
+    if (data.userType === 'estudiante' && !data.onboardingCompleted) {
       setView('onboarding');
     } else {
-      // Si ya lo completó o es otro rol, va al dashboard
       setView('dashboard');
     }
   };
 
   const handleRegister = (data: AuthData) => {
     setAuthData(data);
-    
     if (data.userType === 'estudiante') {
       setView('onboarding');
     } else {
@@ -84,7 +78,6 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    // Aquí deberías agregar 'signOut(auth)' de Firebase
     setAuthData(null);
     setUserData(null);
     setView('landing'); 
@@ -111,16 +104,14 @@ export default function App() {
   }
 
   if (view === 'dashboard' && authData) {
-    
     if (loading) {
       return (
         <div className="min-h-screen flex items-center justify-center">
-          <p>Cargando datos...</p>
+          <p>Cargando datos del sistema...</p>
         </div>
       );
     }
 
-    // Dashboard de Estudiante
     if (authData.userType === 'estudiante') {
       return (
         <>
@@ -129,46 +120,53 @@ export default function App() {
             userData={userData} 
             authData={authData} 
             onLogout={handleLogout}
-            allEvents={events}       // Pasa eventos
-            allJobs={jobs}           // Pasa trabajos
-            allGroups={groups}       // Pasa grupos
-            allResources={resources}   // Pasa recursos
-            onAddGroup={addGroup}    // Pasa función de crear grupo
+            allEvents={events}
+            allJobs={jobs}
+            allGroups={groups}
+            allResources={resources}
+            onAddGroup={addGroup}
           />
         </>
       );
     } 
     
-    // Dashboard de Universidad
-    else if (authData.userType === 'universidad') {
+    if (authData.userType === 'universidad') {
       return (
         <>
           <Toaster />
           <UniversityDashboard 
             authData={authData} 
             onLogout={handleLogout}
-            events={events}       // Pasa eventos
-            onAddEvent={addEvent} // Pasa función de crear
+            events={events}
+            onAddEvent={addEvent}
           />
         </>
       );
     } 
     
-    // Dashboard de Empresa
-    else if (authData.userType === 'empresa') {
+    if (authData.userType === 'empresa') {
       return (
         <>
           <Toaster />
           <CompanyDashboard 
             authData={authData} 
             onLogout={handleLogout}
-            jobs={jobs}           // Pasa trabajos
-            onAddJob={addJob}     // Pasa función de crear trabajo
-            onAddEvent={addEvent} // Pasa función de crear evento
+            jobs={jobs}
+            onAddJob={addJob}
+            onAddEvent={addEvent}
           />
         </>
       );
     }
+
+    // Si llegamos aquí, hay un usuario pero el rol no coincide con ninguno
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <h1 className="text-xl font-bold text-red-600">Error de Perfil</h1>
+        <p>El usuario <strong>{authData.email}</strong> tiene un rol desconocido: "{authData.userType || 'Sin rol'}"</p>
+        <button onClick={handleLogout} className="underline text-blue-600">Cerrar sesión</button>
+      </div>
+    );
   }
 
   // Vista por defecto: Landing Page

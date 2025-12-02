@@ -1,4 +1,4 @@
-// --- CÓDIGO CORREGIDO: db-service.ts ---
+// src/lib/db-service.ts
 
 import { 
   collection, 
@@ -7,23 +7,23 @@ import {
   Timestamp,
   doc,
   setDoc,
-  getDoc, // Importante para leer usuarios
+  getDoc, 
   orderBy,
   query
 } from "firebase/firestore";
-import { db } from "./firebase"; // Asume que firebase.ts exporta 'db'
-import { Evento, Job, AuthData, Grupo, Recurso } from "./types"; // Importa todos los tipos
+import { db } from "./firebase"; 
+import { Evento, Job, AuthData, Grupo, Recurso } from "./types"; 
 
 // Nombres de las "carpetas" en la base de datos
 const USERS_COLLECTION = "users";
 const EVENTS_COLLECTION = "events";
 const JOBS_COLLECTION = "jobs";
-const GROUPS_COLLECTION = "groups"; // Añadido
-const RESOURCES_COLLECTION = "resources"; // Añadido
+const GROUPS_COLLECTION = "groups";
+const RESOURCES_COLLECTION = "resources"; 
 
 /**
  * Guarda un nuevo usuario en la colección 'users'.
- * Usa el email como ID para evitar duplicados.
+ * CORREGIDO: Ahora guarda 'userType' en lugar de 'role'.
  */
 export const registerUserInDB = async (userData: AuthData) => {
   try {
@@ -31,10 +31,11 @@ export const registerUserInDB = async (userData: AuthData) => {
     await setDoc(userRef, {
       email: userData.email,
       name: userData.name || '',
-      role: userData.userType,
+      // --- CORRECCIÓN AQUÍ: Usamos userType ---
+      userType: userData.userType, 
       institutionName: userData.institutionName || null,
       createdAt: Timestamp.now(),
-      onboardingCompleted: false // Valor inicial
+      onboardingCompleted: false 
     });
     console.log("Usuario registrado en DB:", userData.email);
   } catch (error) {
@@ -52,7 +53,7 @@ export const getUserDataFromDB = async (email: string) => {
     const docSnap = await getDoc(userRef);
 
     if (docSnap.exists()) {
-      return docSnap.data() as AuthData; // Devuelve los datos del usuario
+      return docSnap.data() as AuthData; 
     } else {
       console.warn("No se encontraron datos para el usuario:", email);
       return null;
@@ -74,7 +75,6 @@ export const createEventInDB = async (eventData: any) => {
       status: 'publicado',
       createdAt: Timestamp.now()
     });
-    // Devuelve el objeto completo para actualizar el estado local
     return { id: docRef.id, ...eventData, attendees: 0, status: 'publicado' };
   } catch (error) {
     console.error("Error creando evento:", error);
@@ -82,9 +82,6 @@ export const createEventInDB = async (eventData: any) => {
   }
 };
 
-/**
- * Obtiene todos los eventos de la base de datos, ordenados por fecha de creación (nuevos primero).
- */
 export const getEventsFromDB = async (): Promise<Evento[]> => {
   try {
     const q = query(collection(db, EVENTS_COLLECTION), orderBy("createdAt", "desc"));
@@ -99,16 +96,13 @@ export const getEventsFromDB = async (): Promise<Evento[]> => {
   }
 };
 
-/**
- * Crea un nuevo documento en la colección 'jobs'.
- */
 export const createJobInDB = async (jobData: any) => {
   try {
     const docRef = await addDoc(collection(db, JOBS_COLLECTION), {
       ...jobData,
       applicants: 0,
       status: 'activo',
-      postedDate: new Date().toISOString().split('T')[0], // "YYYY-MM-DD"
+      postedDate: new Date().toISOString().split('T')[0], 
       createdAt: Timestamp.now()
     });
     return { id: docRef.id, ...jobData, applicants: 0, status: 'activo', postedDate: new Date().toISOString().split('T')[0] };
@@ -118,9 +112,6 @@ export const createJobInDB = async (jobData: any) => {
   }
 };
 
-/**
- * Obtiene todas las vacantes de la base de datos, ordenadas por fecha de creación.
- */
 export const getJobsFromDB = async (): Promise<Job[]> => {
   try {
     const q = query(collection(db, JOBS_COLLECTION), orderBy("createdAt", "desc"));
@@ -135,18 +126,13 @@ export const getJobsFromDB = async (): Promise<Job[]> => {
   }
 };
 
-/**
- * Crea un nuevo documento en la colección 'groups'.
- * El creador cuenta como el primer miembro.
- */
 export const createGroupInDB = async (groupData: any) => {
   try {
     const docRef = await addDoc(collection(db, GROUPS_COLLECTION), {
       ...groupData,
-      members: 1, // El creador es el 1er miembro
+      members: 1, 
       createdAt: Timestamp.now()
     });
-    // Devuelve el objeto completo para actualizar el estado local
     return { id: docRef.id, ...groupData, members: 1 };
   } catch (error) {
     console.error("Error creando grupo:", error);
@@ -154,9 +140,6 @@ export const createGroupInDB = async (groupData: any) => {
   }
 };
 
-/**
- * Obtiene todos los grupos de la base de datos, ordenados por fecha de creación.
- */
 export const getGroupsFromDB = async (): Promise<Grupo[]> => {
   try {
     const q = query(collection(db, GROUPS_COLLECTION), orderBy("createdAt", "desc"));
@@ -171,9 +154,6 @@ export const getGroupsFromDB = async (): Promise<Grupo[]> => {
   }
 };
 
-/**
- * Obtiene todos los recursos de la base de datos, ordenados por fecha de creación.
- */
 export const getResourcesFromDB = async (): Promise<Recurso[]> => {
   try {
     const q = query(collection(db, RESOURCES_COLLECTION), orderBy("createdAt", "desc"));

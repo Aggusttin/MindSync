@@ -1,4 +1,5 @@
-// Define los "contratos" de datos para toda la app
+// src/lib/types.ts
+
 export type UserRole = 'estudiante' | 'universidad' | 'empresa';
 
 export interface AuthData {
@@ -7,11 +8,15 @@ export interface AuthData {
   userType: UserRole;
   name?: string;
   institutionName?: string;
+  // Agregamos esto para saber si ya completó el test
+  onboardingCompleted?: boolean;
+  // Esto es CRÍTICO: permite que el objeto tenga propiedades extra (como learningStyle) sin dar error
+  [key: string]: any; 
 }
 
 export interface OnboardingData {
   learningStyle: 'visual' | 'auditivo' | 'kinestesico' | null;
-  testAnswers: string[]; // Guardamos el valor ('visual', 'auditivo', etc.)
+  testAnswers: string[];
   name: string;
   email: string;
   career: string;
@@ -19,6 +24,7 @@ export interface OnboardingData {
   location: string;
   interests: string[];
   groupPreference: 'presencial' | 'virtual' | 'ambos' | null;
+  onboardingCompleted?: boolean;
 }
 
 export interface Evento {
@@ -47,3 +53,26 @@ export interface Job {
   postedDate: string;
   description?: string;
 }
+
+export interface Grupo {
+  id: string | number;
+  name: string;
+  members: number;
+  maxMembers: number;
+  style: 'visual' | 'auditivo' | 'kinestesico';
+  mode: 'presencial' | 'virtual';
+  location?: string;
+  schedule: string;
+  topics: string[];
+}
+
+export interface Recurso {
+  id: string | number;
+  title: string;
+  type: string;
+  provider: string;
+  style: 'visual' | 'auditivo' | 'kinestesico';
+}
+
+export type LearningStyle = 'visual' | 'auditivo' | 'kinestesico';
+export type GroupMode = 'presencial' | 'virtual';
