@@ -1,33 +1,28 @@
-// --- CÓDIGO CORREGIDO: StudentDashboard.tsx ---
-
 import { useState } from 'react';
 import { 
-  Users, Calendar, BookOpen, Briefcase, Settings, 
-  LogOut, Eye, Volume2, Hand, TrendingUp, Bell,
-  Search, Filter, MapPin, Video, Plus // Importa el icono Plus
+  Users, Calendar, BookOpen, Briefcase, 
+  Eye, Volume2, Hand, Search, Filter, MapPin, Video, Plus 
 } from 'lucide-react';
-import { LogoIcon } from '../Logo';
-// Importa todos los tipos de datos que recibirá
 import { OnboardingData, AuthData, Evento, Job, Grupo, Recurso } from '../../lib/types';
-import { CreateGroupDialog } from './CreateGroupDialog'; // Importa el nuevo diálogo
+import { CreateGroupDialog } from './CreateGroupDialog';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Badge } from '../ui/badge';
 import { toast } from 'sonner';
+// --- NUEVOS IMPORTS ---
+import { Navbar } from '../Navbar';
+import { Footer } from '../Footer';
 
 interface Props {
   userData: OnboardingData | null;
   authData: AuthData;
   onLogout: () => void;
-  // Recibe todos los datos reales como props
   allEvents: Evento[];
   allJobs: Job[];
   allGroups: Grupo[];
   allResources: Recurso[];
-  onAddGroup: (data: any) => Promise<boolean>; // Recibe la función de crear
+  onAddGroup: (data: any) => Promise<boolean>;
 }
-
-// --- TODOS LOS DATOS DE MAQUETA FUERON ELIMINADOS ---
 
 const styleInfo = {
   visual: { icon: Eye, color: 'from-blue-500 to-blue-600', name: 'Visual' },
@@ -43,15 +38,14 @@ export function StudentDashboard({
   allJobs, 
   allGroups, 
   allResources,
-  onAddGroup // Recibe la función
+  onAddGroup 
 }: Props) {
   const [activeTab, setActiveTab] = useState<'inicio' | 'grupos' | 'eventos' | 'empleos' | 'recursos'>('inicio');
-  const [isGroupDialogOpen, setIsGroupDialogOpen] = useState(false); // Estado para el diálogo
+  const [isGroupDialogOpen, setIsGroupDialogOpen] = useState(false);
 
   const userStyle = userData?.learningStyle || 'visual';
-  const StyleIcon = styleInfo[userStyle].icon;
+  // const StyleIcon = styleInfo[userStyle].icon; // (Opcional si lo usas)
 
-  // Calcula los contadores dinámicamente
   const groupsCount = allGroups.length;
   const eventsCount = allEvents.length;
   const resourcesCount = allResources.length;
@@ -59,46 +53,71 @@ export function StudentDashboard({
 
   return (
     <>
-      {/* Renderiza el diálogo de creación de grupo */}
       <CreateGroupDialog 
         isOpen={isGroupDialogOpen} 
         onClose={() => setIsGroupDialogOpen(false)} 
         onCreate={onAddGroup} 
       />
 
-      <div className="min-h-screen bg-gray-50">
-        {/* ... (Navbar se mantiene igual) ... */}
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        {/* --- NAVBAR AGREGADO --- */}
+        <Navbar onLogout={onLogout} userName={authData.name} />
 
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          {/* ... (Welcome y Tabs se mantienen igual) ... */}
+        <div className="max-w-7xl mx-auto px-4 py-8 flex-1 w-full">
+          
+          {/* Bienvenida y Tabs */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Hola, {authData.name?.split(' ')[0]} 👋
+            </h1>
+            <p className="text-gray-600 mb-6">
+              Aquí tienes las novedades personalizadas para tu estilo <span className="font-semibold capitalize">{userStyle}</span>.
+            </p>
 
-          {/* Content based on active tab */}
+            <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-1">
+              {['inicio', 'grupos', 'eventos', 'empleos', 'recursos'].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab as any)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeTab === tab 
+                      ? 'bg-white text-primary shadow-sm' 
+                      : 'text-gray-500 hover:text-gray-900 hover:bg-white/50'
+                  }`}
+                >
+                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* ... (El resto del contenido del Dashboard se mantiene IDÉNTICO a tu versión anterior) ... */}
           {activeTab === 'inicio' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Stats */}
-              <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-4 gap-4">
+               {/* Stats */}
+               <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="bg-white rounded-2xl p-6 border border-gray-200">
                   <Users className="text-blue-500 mb-2" size={24} />
-                  <div className="text-2xl text-gray-900 mb-1">{groupsCount}</div> {/* DINÁMICO */}
+                  <div className="text-2xl text-gray-900 mb-1">{groupsCount}</div>
                   <div className="text-sm text-gray-600">Grupos activos</div>
                 </div>
                 <div className="bg-white rounded-2xl p-6 border border-gray-200">
                   <Calendar className="text-purple-500 mb-2" size={24} />
-                  <div className="text-2xl text-gray-900 mb-1">{eventsCount}</div> {/* DINÁMICO */}
+                  <div className="text-2xl text-gray-900 mb-1">{eventsCount}</div>
                   <div className="text-sm text-gray-600">Eventos próximos</div>
                 </div>
                 <div className="bg-white rounded-2xl p-6 border border-gray-200">
                   <BookOpen className="text-green-500 mb-2" size={24} />
-                  <div className="text-2xl text-gray-900 mb-1">{resourcesCount}</div> {/* DINÁMICO */}
+                  <div className="text-2xl text-gray-900 mb-1">{resourcesCount}</div>
                   <div className="text-sm text-gray-600">Recursos guardados</div>
                 </div>
                 <div className="bg-white rounded-2xl p-6 border border-gray-200">
                   <Briefcase className="text-orange-500 mb-2" size={24} />
-                  <div className="text-2xl text-gray-900 mb-1">{jobsCount}</div> {/* DINÁMICO */}
+                  <div className="text-2xl text-gray-900 mb-1">{jobsCount}</div>
                   <div className="text-sm text-gray-600">Ofertas laborales</div>
                 </div>
               </div>
-
+              
               {/* Compatible Groups Preview */}
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-2xl p-6 border border-gray-200">
@@ -109,7 +128,6 @@ export function StudentDashboard({
                     </button>
                   </div>
                   <div className="space-y-3">
-                    {/* Mapea sobre los datos reales de 'allGroups' */}
                     {allGroups.slice(0, 3).map((group) => {
                       const GroupStyleIcon = styleInfo[group.style].icon;
                       return (
@@ -144,7 +162,6 @@ export function StudentDashboard({
                     </button>
                   </div>
                   <div className="space-y-3">
-                    {/* Mapea sobre los datos reales de 'allEvents' */}
                     {allEvents.slice(0, 3).map((event) => (
                       <div key={event.id} className="p-3 bg-gray-50 rounded-xl">
                         <h3 className="text-sm text-gray-900 mb-2">{event.title}</h3>
@@ -159,10 +176,10 @@ export function StudentDashboard({
             </div>
           )}
 
+          {/* ... (Copia el resto de los bloques if activeTab === 'grupos', etc. de tu código anterior aquí) ... */}
           {activeTab === 'grupos' && (
             <div>
               <div className="mb-6 flex flex-col sm:flex-row gap-4 justify-between items-center">
-                {/* Contenedor de búsqueda y filtro */}
                 <div className="flex-1 flex gap-4 w-full">
                   <div className="flex-1 relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
@@ -173,8 +190,6 @@ export function StudentDashboard({
                     Filtrar
                   </Button>
                 </div>
-                
-                {/* Botón de Crear Grupo */}
                 <Button 
                   onClick={() => setIsGroupDialogOpen(true)}
                   className="bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 hover:opacity-90 flex items-center gap-2 w-full sm:w-auto"
@@ -183,9 +198,7 @@ export function StudentDashboard({
                   Crear grupo
                 </Button>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Mapea sobre los datos reales de 'allGroups' */}
                 {allGroups.map((group) => {
                   const GroupStyleIcon = styleInfo[group.style].icon;
                   return (
@@ -202,7 +215,6 @@ export function StudentDashboard({
                           {group.members}/{group.maxMembers} miembros
                         </Badge>
                       </div>
-
                       <div className="space-y-2 mb-4">
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           {group.mode === 'presencial' ? <MapPin size={16} /> : <Video size={16} />}
@@ -213,7 +225,6 @@ export function StudentDashboard({
                           <span>{group.schedule}</span>
                         </div>
                       </div>
-
                       <div className="flex flex-wrap gap-2 mb-4">
                         {group.topics.map((topic, idx) => (
                           <Badge key={idx} variant="secondary" className="text-xs">
@@ -221,11 +232,7 @@ export function StudentDashboard({
                           </Badge>
                         ))}
                       </div>
-
-                      <Button 
-                        onClick={() => toast.success(`¡Solicitud enviada al grupo "${group.name}"!`)}
-                        className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 hover:opacity-90"
-                      >
+                      <Button onClick={() => toast.success(`¡Solicitud enviada al grupo "${group.name}"!`)} className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 hover:opacity-90">
                         Unirse al grupo
                       </Button>
                     </div>
@@ -237,7 +244,6 @@ export function StudentDashboard({
 
           {activeTab === 'eventos' && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Mapea sobre los datos reales de 'allEvents' */}
               {allEvents.map((event) => {
                 const EventStyleIcon = styleInfo[event.type].icon;
                 return (
@@ -245,17 +251,10 @@ export function StudentDashboard({
                     <div className={`w-12 h-12 bg-gradient-to-br ${styleInfo[event.type].color} rounded-xl flex items-center justify-center mb-4`}>
                       <EventStyleIcon size={24} className="text-white" />
                     </div>
-                    
                     <h3 className="text-lg text-gray-900 mb-2">{event.title}</h3>
-                    
                     <div className="space-y-2 mb-4">
                       <div className="text-sm text-gray-600">
-                        {new Date(event.date).toLocaleDateString('es-ES', { 
-                          weekday: 'long', 
-                          year: 'numeric', 
-                          month: 'long', 
-                          day: 'numeric' 
-                        })}
+                        {new Date(event.date).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                       </div>
                       <div className="text-sm text-gray-600">{event.time}</div>
                       <div className="text-sm text-gray-600">Por: {event.organizer}</div>
@@ -263,12 +262,7 @@ export function StudentDashboard({
                         {event.mode === 'presencial' ? 'Presencial' : 'Virtual'}
                       </Badge>
                     </div>
-
-                    <Button 
-                      onClick={() => toast.success(`¡Te has inscrito a "${event.title}"!`)}
-                      className="w-full" 
-                      variant="outline"
-                    >
+                    <Button onClick={() => toast.success(`¡Te has inscrito a "${event.title}"!`)} className="w-full" variant="outline">
                       Inscribirse
                     </Button>
                   </div>
@@ -279,7 +273,6 @@ export function StudentDashboard({
 
           {activeTab === 'empleos' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Mapea sobre los datos reales de 'allJobs' */}
               {allJobs.map((job) => (
                 <div key={job.id} className="bg-white rounded-2xl p-6 border border-gray-200 hover:shadow-lg transition-shadow">
                   <div className="flex items-start justify-between mb-4">
@@ -289,25 +282,25 @@ export function StudentDashboard({
                     </div>
                     <Badge variant="secondary">{job.type}</Badge>
                   </div>
-
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <MapPin size={16} />
                       <span>{job.location}</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600">
-                      {(() => {
-                        const JobStyleIcon = styleInfo[job.style].icon;
-                        return <JobStyleIcon size={16} />;
-                      })()}
-                      <span>Compatible con perfil {styleInfo[job.style].name}</span>
+                      {/* Fix para el icono dinámico */}
+                      {styleInfo[job.style] && (
+                        <>
+                          {(() => {
+                            const JobStyleIcon = styleInfo[job.style].icon;
+                            return <JobStyleIcon size={16} />;
+                          })()}
+                          <span>Compatible con perfil {styleInfo[job.style].name}</span>
+                        </>
+                      )}
                     </div>
                   </div>
-
-                  <Button 
-                    onClick={() => toast.info(`Detalles de "${job.title}" en ${job.company} (función en desarrollo)`)}
-                    className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 hover:opacity-90"
-                  >
+                  <Button onClick={() => toast.info(`Detalles de "${job.title}"`)} className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 hover:opacity-90">
                     Ver detalles
                   </Button>
                 </div>
@@ -317,7 +310,6 @@ export function StudentDashboard({
 
           {activeTab === 'recursos' && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Mapea sobre los datos reales de 'allResources' */}
               {allResources.map((resource) => {
                 const ResourceStyleIcon = styleInfo[resource.style].icon;
                 return (
@@ -325,11 +317,9 @@ export function StudentDashboard({
                     <div className={`w-12 h-12 bg-gradient-to-br ${styleInfo[resource.style].color} rounded-xl flex items-center justify-center mb-4`}>
                       <ResourceStyleIcon size={24} className="text-white" />
                     </div>
-                    
                     <h3 className="text-lg text-gray-900 mb-2">{resource.title}</h3>
                     <p className="text-sm text-gray-600 mb-4">{resource.type}</p>
                     <p className="text-sm text-gray-500 mb-4">Por: {resource.provider}</p>
-
                     <Button className="w-full" variant="outline">
                       Acceder
                     </Button>
@@ -338,7 +328,11 @@ export function StudentDashboard({
               })}
             </div>
           )}
+
         </div>
+        
+        {/* --- FOOTER AGREGADO --- */}
+        <Footer />
       </div>
     </>
   );
