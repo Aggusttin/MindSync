@@ -22,24 +22,31 @@ export function CompanyDashboard({ authData, onLogout, jobs, onAddJob, onAddEven
   const [isJobDialogOpen, setIsJobDialogOpen] = useState(false);
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
 
+  // Obtenemos el nombre de la empresa de los datos de autenticación
+  const companyName = authData.institutionName || authData.name || 'Mi Empresa';
+
   return (
     <>
       <CreateJobDialog 
         isOpen={isJobDialogOpen} 
         onClose={() => setIsJobDialogOpen(false)} 
         onCreate={onAddJob}
+        // PASAMOS EL NOMBRE DE LA EMPRESA AQUÍ
+        companyName={companyName}
       />
+      
       <CreateEventDialog 
         isOpen={isEventDialogOpen} 
         onClose={() => setIsEventDialogOpen(false)} 
         userType="empresa"
-        // PASAMOS EL NOMBRE DE LA EMPRESA
-        organizerName={authData.institutionName || authData.name || 'Empresa'}
+        // También pasamos el nombre al evento por si acaso
+        organizerName={companyName}
         onCreate={onAddEvent}
       />
       
       <div className="min-h-screen bg-gray-50 flex flex-col">
-        <Navbar onLogout={onLogout} userName={authData.institutionName || authData.name} />
+        {/* --- NAVBAR --- */}
+        <Navbar onLogout={onLogout} userName={companyName} />
 
         <div className="max-w-7xl mx-auto px-4 py-8 flex-1 w-full">
           <div className="mb-8">
@@ -74,7 +81,9 @@ export function CompanyDashboard({ authData, onLogout, jobs, onAddJob, onAddEven
                       <Button variant="outline" size="sm">Ver detalles</Button>
                     </div>
                   ))}
-                  {jobs.length === 0 && <p className="text-gray-500 text-sm text-center">No hay vacantes activas.</p>}
+                  {jobs.length === 0 && (
+                    <p className="text-sm text-gray-500 text-center py-4">No tienes vacantes activas.</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -101,12 +110,21 @@ export function CompanyDashboard({ authData, onLogout, jobs, onAddJob, onAddEven
                       <span className="text-sm text-gray-500 capitalize">{job.style}</span>
                     </div>
                     <p className="text-gray-600 text-sm">{job.company} - {job.location}</p>
+                    <p className="text-gray-500 text-xs mt-2 line-clamp-2">{job.description}</p>
                   </div>
                 ))}
+                {jobs.length === 0 && (
+                    <div className="text-center py-10 bg-white rounded-2xl border border-dashed">
+                        <p className="text-gray-500">Aún no has publicado ninguna vacante.</p>
+                        <Button variant="link" onClick={() => setIsJobDialogOpen(true)}>Publicar la primera</Button>
+                    </div>
+                )}
               </div>
             </div>
           )}
         </div>
+
+        {/* --- FOOTER --- */}
         <Footer />
       </div>
     </>

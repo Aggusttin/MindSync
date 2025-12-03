@@ -1,93 +1,172 @@
-// --- CÓDIGO CORREGIDO ---
+// src/components/dashboard/CreateJobDialog.tsx
 
 import { useState } from 'react';
-import { X, Briefcase, MapPin, Eye, Volume2, Hand } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import { Textarea } from '../ui/textarea'; // Asegúrate de tener este componente, si no usa Input
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { toast } from 'sonner';
-import { Job } from '../../lib/types'; // Importa el tipo
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  // Recibe la función para crear vacantes desde el Dashboard
-  onCreate: (data: Partial<Job>) => Promise<boolean>;
+  onCreate: (data: any) => Promise<boolean>;
+  companyName: string; // Nuevo: Recibimos el nombre de la empresa
 }
 
-export function CreateJobDialog({ isOpen, onClose, onCreate }: Props) {
+export function CreateJobDialog({ isOpen, onClose, onCreate, companyName }: Props) {
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     type: 'Tiempo completo',
     location: '',
     description: '',
-    style: 'visual' as 'visual' | 'auditivo' | 'kinestesico',
+    style: 'visual',
   });
-  const [isLoading, setIsLoading] = useState(false); // Estado de carga
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validaciones
     if (!formData.title || !formData.location || !formData.description) {
       toast.error('Por favor completa todos los campos obligatorios');
       return;
     }
 
-    setIsLoading(true); // Activa el estado de carga
-    
-    // Llama a la función 'onCreate' (que viene de App.tsx)
-    const success = await onCreate(formData);
+    setIsLoading(true);
 
-    setIsLoading(false); // Desactiva el estado de carga
+    try {
+      // Preparamos los datos incluyendo el nombre de la empresa
+      const jobData = {
+        ...formData,
+        company: companyName, // Guardamos quién publica
+      };
+      
+      const success = await onCreate(jobData);
 
-    if (success) {
-      toast.success('¡Vacante creada exitosamente!');
-      onClose();
-      // Reset form
-      setFormData({
-        title: '',
-        type: 'Tiempo completo',
-        location: '',
-        description: '',
-        style: 'visual',
-      });
+      if (success) {
+        toast.success('¡Vacante creada exitosamente!');
+        // Reset del formulario
+        setFormData({
+          title: '',
+          type: 'Tiempo completo',
+          location: '',
+          description: '',
+          style: 'visual',
+        });
+        onClose();
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  if (!isOpen) return null;
-
-  const styleOptions = [
-    { value: 'visual', label: 'Visual', icon: Eye, color: 'from-blue-500 to-blue-600' },
-    { value: 'auditivo', label: 'Auditivo', icon: Volume2, color: 'from-green-500 to-green-600' },
-    { value: 'kinestesico', label: 'Kinestésico', icon: Hand, color: 'from-orange-500 to-orange-600' },
-  ];
-
-  const jobTypes = ['Tiempo completo', 'Medio tiempo', 'Pasantía', 'Freelance', 'Proyecto'];
-
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-2xl text-gray-900">Publicar vacante</h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg" disabled={isLoading}>
-            <X size={20} />
-          </button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      {/* CORRECCIÓN VISUAL CLAVE:
+          Agregamos 'max-h-[90vh]' y 'overflow-y-auto' para evitar que se corte el contenido
+          y permitir hacer scroll si la pantalla es pequeña.
+      */}
+      <DialogContent className="sm:max-w-[600px] bg-white max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Publicar nueva vacante</DialogTitle>
+        </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          {/* ... (Todo el JSX del formulario se mantiene igual, pero añade 'disabled={isLoading}' a los inputs) ... */}
+        <form onSubmit={handleSubmit} className="space-y-5 py-4">
           
-          {/* Actions */}
-          <div className="flex gap-3 pt-4">
-            <Button type="button" variant="outline" className="flex-1" onClick={onClose} disabled={isLoading}>
+          {/* Título */}
+          <div className="grid gap-2">
+            <Label htmlFor="title">Título del puesto *</Label>
+            <Input
+              id="title"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              placeholder="Ej: Desarrollador Frontend Jr."
+              disabled={isLoading}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            {/* Tipo de contrato */}
+            <div className="grid gap-2">
+              <Label htmlFor="type">Tipo de contrato</Label>
+              <Select
+                value={formData.type}
+                onValueChange={(val) => setFormData({ ...formData, type: val })}
+                disabled={isLoading}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Tiempo completo">Tiempo completo</SelectItem>
+                  <SelectItem value="Medio tiempo">Medio tiempo</SelectItem>
+                  <SelectItem value="Pasantía">Pasantía</SelectItem>
+                  <SelectItem value="Freelance">Freelance</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Estilo de aprendizaje sugerido */}
+            <div className="grid gap-2">
+              <Label htmlFor="style">Perfil ideal</Label>
+              <Select
+                value={formData.style}
+                onValueChange={(val) => setFormData({ ...formData, style: val })}
+                disabled={isLoading}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="visual">Visual</SelectItem>
+                  <SelectItem value="auditivo">Auditivo</SelectItem>
+                  <SelectItem value="kinestesico">Kinestésico</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Ubicación */}
+          <div className="grid gap-2">
+            <Label htmlFor="location">Ubicación *</Label>
+            <Input
+              id="location"
+              value={formData.location}
+              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              placeholder="Ej: Remoto / Buenos Aires"
+              disabled={isLoading}
+            />
+          </div>
+
+          {/* Descripción */}
+          <div className="grid gap-2">
+            <Label htmlFor="description">Descripción del puesto *</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Describe las responsabilidades y requisitos..."
+              className="min-h-[100px]"
+              disabled={isLoading}
+            />
+          </div>
+
+          {/* Botones */}
+          <div className="flex justify-end gap-3 pt-4">
+            <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
               Cancelar
             </Button>
-            <Button type="submit" className="flex-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 hover:opacity-90" disabled={isLoading}>
+            <Button type="submit" className="bg-primary text-white hover:bg-primary/90" disabled={isLoading}>
               {isLoading ? "Publicando..." : "Publicar vacante"}
             </Button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
