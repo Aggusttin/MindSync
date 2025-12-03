@@ -1,5 +1,3 @@
-// src/components/dashboard/StudentDashboard.tsx
-
 import { useState } from 'react';
 import { 
   Users, Calendar, BookOpen, Briefcase, 
@@ -29,9 +27,9 @@ interface Props {
 }
 
 const styleInfo = {
-  visual: { icon: Eye, color: 'from-blue-500 to-blue-600', name: 'Visual' },
-  auditivo: { icon: Volume2, color: 'from-green-500 to-green-600', name: 'Auditivo' },
-  kinestesico: { icon: Hand, color: 'from-orange-500 to-orange-600', name: 'Kinestésico' },
+  visual: { icon: Eye, color: 'from-blue-500 to-blue-600', name: 'Visual', bg: 'bg-blue-100', text: 'text-blue-700' },
+  auditivo: { icon: Volume2, color: 'from-green-500 to-green-600', name: 'Auditivo', bg: 'bg-green-100', text: 'text-green-700' },
+  kinestesico: { icon: Hand, color: 'from-orange-500 to-orange-600', name: 'Kinestésico', bg: 'bg-orange-100', text: 'text-orange-700' },
 };
 
 export function StudentDashboard({ 
@@ -55,9 +53,17 @@ export function StudentDashboard({
 
   const handleEventAction = (event: Evento) => {
     const isRegistered = event.attendeeIds?.includes(userId);
-    // Llama a la función del hook pasando si se quiere inscribir o anular
     onToggleEvent(event.id, userId, !isRegistered);
   };
+
+  // Iconos para las tabs
+  const tabs = [
+    { id: 'inicio', label: 'Inicio', icon: <Users size={18} /> }, // Usando icono genérico para inicio si no hay uno específico
+    { id: 'grupos', label: 'Grupos', icon: <Users size={18} /> },
+    { id: 'eventos', label: 'Eventos', icon: <Calendar size={18} /> },
+    { id: 'empleos', label: 'Empleos', icon: <Briefcase size={18} /> },
+    { id: 'recursos', label: 'Recursos', icon: <BookOpen size={18} /> },
+  ];
 
   return (
     <>
@@ -79,88 +85,157 @@ export function StudentDashboard({
         <Navbar onLogout={onLogout} userName={authData.name} />
 
         <div className="max-w-7xl mx-auto px-4 py-8 flex-1 w-full">
+          
+          {/* HEADER DE BIENVENIDA */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Hola, {authData.name?.split(' ')[0]} 👋
+            <h1 className="text-3xl font-bold text-gray-900 mb-1 flex items-center gap-2">
+              Hola, {authData.name?.split(' ')[0]} <span className="text-2xl">👋</span>
             </h1>
-            <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-1">
-              {['inicio', 'grupos', 'eventos', 'empleos', 'recursos'].map((tab) => (
+            <p className="text-gray-600 mb-6">
+              Tu perfil de aprendizaje: <span className={`font-semibold capitalize text-${userStyle === 'visual' ? 'blue' : userStyle === 'auditivo' ? 'green' : 'orange'}-600`}>{userStyle}</span>
+            </p>
+
+            {/* TABS DE NAVEGACIÓN */}
+            <div className="flex flex-wrap gap-6 border-b border-gray-200 pb-1">
+              {tabs.map((tab) => (
                 <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab as any)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    activeTab === tab 
-                      ? 'bg-white text-primary shadow-sm' 
-                      : 'text-gray-500 hover:text-gray-900 hover:bg-white/50'
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`flex items-center gap-2 pb-3 px-1 text-sm font-medium transition-all border-b-2 ${
+                    activeTab === tab.id 
+                      ? 'border-primary text-primary' 
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
-                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                  {tab.icon}
+                  {tab.label}
                 </button>
               ))}
             </div>
           </div>
 
+          {/* CONTENIDO PRINCIPAL - INICIO */}
           {activeTab === 'inicio' && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-               <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="bg-white rounded-2xl p-6 border border-gray-200">
-                    <Users className="text-blue-500 mb-2" size={24} />
-                    <div className="text-2xl text-gray-900 mb-1">{allGroups.length}</div>
-                    <div className="text-sm text-gray-600">Grupos activos</div>
+            <div className="space-y-8">
+               {/* 1. TARJETAS DE ESTADÍSTICAS (STATS) */}
+               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="bg-blue-50 w-10 h-10 rounded-lg flex items-center justify-center mb-4">
+                        <Users className="text-blue-500" size={20} />
+                    </div>
+                    <div className="text-3xl font-bold text-gray-900 mb-1">{allGroups.length}</div>
+                    <div className="text-sm text-gray-500">Grupos activos</div>
                   </div>
-                  <div className="bg-white rounded-2xl p-6 border border-gray-200">
-                    <Calendar className="text-purple-500 mb-2" size={24} />
-                    <div className="text-2xl text-gray-900 mb-1">{allEvents.length}</div>
-                    <div className="text-sm text-gray-600">Eventos próximos</div>
+                  
+                  <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="bg-purple-50 w-10 h-10 rounded-lg flex items-center justify-center mb-4">
+                        <Calendar className="text-purple-500" size={20} />
+                    </div>
+                    <div className="text-3xl font-bold text-gray-900 mb-1">{allEvents.length}</div>
+                    <div className="text-sm text-gray-500">Eventos próximos</div>
                   </div>
-                  <div className="bg-white rounded-2xl p-6 border border-gray-200">
-                    <BookOpen className="text-green-500 mb-2" size={24} />
-                    <div className="text-2xl text-gray-900 mb-1">{allResources.length}</div>
-                    <div className="text-sm text-gray-600">Recursos guardados</div>
+
+                  <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="bg-green-50 w-10 h-10 rounded-lg flex items-center justify-center mb-4">
+                        <BookOpen className="text-green-500" size={20} />
+                    </div>
+                    <div className="text-3xl font-bold text-gray-900 mb-1">{allResources.length}</div>
+                    <div className="text-sm text-gray-500">Recursos guardados</div>
                   </div>
-                  <div className="bg-white rounded-2xl p-6 border border-gray-200">
-                    <Briefcase className="text-orange-500 mb-2" size={24} />
-                    <div className="text-2xl text-gray-900 mb-1">{allJobs.length}</div>
-                    <div className="text-sm text-gray-600">Ofertas laborales</div>
+
+                  <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="bg-orange-50 w-10 h-10 rounded-lg flex items-center justify-center mb-4">
+                        <Briefcase className="text-orange-500" size={20} />
+                    </div>
+                    <div className="text-3xl font-bold text-gray-900 mb-1">{allJobs.length}</div>
+                    <div className="text-sm text-gray-500">Ofertas laborales</div>
                   </div>
                </div>
                
-               <div className="lg:col-span-3"> 
-                <div className="bg-white rounded-2xl p-6 border border-gray-200">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl text-gray-900">Próximos eventos</h2>
-                    <button onClick={() => setActiveTab('eventos')} className="text-purple-600 text-sm hover:text-purple-700">Ver todos</button>
+               {/* 2. GRID PRINCIPAL (GRUPOS A LA IZQ, EVENTOS A LA DER) */}
+               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  
+                  {/* COLUMNA IZQUIERDA: GRUPOS COMPATIBLES (Ocupa 2 espacios) */}
+                  <div className="lg:col-span-2 space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-xl font-semibold text-gray-900">Grupos compatibles</h2>
+                        <button onClick={() => setActiveTab('grupos')} className="text-sm text-purple-600 font-medium hover:text-purple-700">Ver todos</button>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        {allGroups.slice(0, 3).map((group) => {
+                            const styleData = styleInfo[group.style];
+                            const GroupIcon = styleData.icon;
+                            return (
+                                <div key={group.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-gray-200 transition-colors">
+                                    <div>
+                                        <h3 className="font-semibold text-gray-900 mb-2">{group.name}</h3>
+                                        <div className="flex items-center gap-3 text-sm text-gray-500">
+                                            <div className="flex items-center gap-1">
+                                                <GroupIcon size={14} className={styleData.text} />
+                                                <span>{styleData.name}</span>
+                                            </div>
+                                            <span>•</span>
+                                            <div className="flex items-center gap-1">
+                                                <MapPin size={14} />
+                                                <span>{group.location || 'Virtual'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <Badge variant="secondary" className="bg-gray-100 text-gray-700 font-normal">
+                                        {group.members}/{group.maxMembers}
+                                    </Badge>
+                                </div>
+                            );
+                        })}
+                        {allGroups.length === 0 && (
+                            <p className="text-gray-500 text-sm italic">No hay grupos disponibles por el momento.</p>
+                        )}
+                    </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {allEvents.slice(0, 3).map((event) => {
-                      const isRegistered = event.attendeeIds?.includes(userId);
-                      return (
-                        <div key={event.id} className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex flex-col justify-between h-full">
-                          <div>
-                            <h3 className="text-sm font-semibold text-gray-900 mb-2 line-clamp-1">{event.title}</h3>
-                            <div className="text-xs text-gray-600 mb-3">
-                              {new Date(event.date).toLocaleDateString()} • {event.attendees} asistentes
+
+                  {/* COLUMNA DERECHA: PRÓXIMOS EVENTOS (Ocupa 1 espacio) */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-xl font-semibold text-gray-900">Próximos eventos</h2>
+                        <button onClick={() => setActiveTab('eventos')} className="text-sm text-purple-600 font-medium hover:text-purple-700">Ver todos</button>
+                    </div>
+
+                    <div className="space-y-4">
+                        {allEvents.slice(0, 3).map((event) => (
+                            <div key={event.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:border-gray-200 transition-colors">
+                                <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{event.title}</h3>
+                                <div className="text-sm text-gray-500 mb-4 flex items-center gap-2">
+                                    <span className="capitalize">{new Date(event.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</span>
+                                    <span>•</span>
+                                    <span>{event.time}</span>
+                                </div>
+                                <Button 
+                                    size="sm" 
+                                    variant="secondary"
+                                    className="w-full bg-gray-50 hover:bg-gray-100 text-gray-900 font-medium h-9"
+                                    onClick={() => setActiveTab('eventos')} // O llevar al detalle
+                                >
+                                    Ver detalles
+                                </Button>
                             </div>
-                          </div>
-                          <Button 
-                            size="sm" 
-                            variant={isRegistered ? "destructive" : "default"}
-                            className={`w-full h-8 text-xs ${isRegistered ? 'bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 border border-red-200' : 'bg-primary text-white'}`}
-                            onClick={() => handleEventAction(event)}
-                          >
-                            {isRegistered ? "Anular inscripción" : "Inscribirse"}
-                          </Button>
-                        </div>
-                      );
-                    })}
+                        ))}
+                         {allEvents.length === 0 && (
+                            <p className="text-gray-500 text-sm italic">No hay eventos próximos.</p>
+                        )}
+                    </div>
                   </div>
-                </div>
-              </div>
+
+               </div>
             </div>
           )}
 
+          {/* --- OTRAS PESTAÑAS (GRUPOS, EVENTOS, EMPLEOS...) --- */}
+          {/* Mantenemos el código anterior para el resto de pestañas, que ya funcionaba bien */}
+          
           {activeTab === 'grupos' && (
             <div>
+              {/* ... (Código de grupos de la respuesta anterior) ... */}
               <div className="mb-6 flex flex-col sm:flex-row gap-4 justify-between items-center">
                 <div className="flex-1 flex gap-4 w-full">
                   <div className="flex-1 relative">
@@ -181,41 +256,46 @@ export function StudentDashboard({
                 </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {allGroups.map((group) => (
-                    <div key={group.id} className="bg-white rounded-2xl p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-                      <div className="flex items-start justify-between mb-4">
-                        <div>
-                          <h3 className="text-lg text-gray-900 mb-2">{group.name}</h3>
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <span>{styleInfo[group.style] ? styleInfo[group.style].name : group.style}</span>
-                          </div>
+                {allGroups.map((group) => {
+                    const styleData = styleInfo[group.style];
+                    const GroupIcon = styleData.icon;
+                    return (
+                        <div key={group.id} className="bg-white rounded-2xl p-6 border border-gray-200 hover:shadow-lg transition-shadow">
+                        <div className="flex items-start justify-between mb-4">
+                            <div>
+                            <h3 className="text-lg text-gray-900 mb-2">{group.name}</h3>
+                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                                <GroupIcon size={16} className={styleData.text}/>
+                                <span>{styleData.name}</span>
+                            </div>
+                            </div>
+                            <Badge variant="outline">
+                            {group.members}/{group.maxMembers} miembros
+                            </Badge>
                         </div>
-                        <Badge variant="outline">
-                          {group.members}/{group.maxMembers} miembros
-                        </Badge>
-                      </div>
-                      <div className="space-y-2 mb-4">
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          {group.mode === 'presencial' ? <MapPin size={16} /> : <Video size={16} />}
-                          <span>{group.mode === 'presencial' ? group.location : 'Virtual'}</span>
+                        <div className="space-y-2 mb-4">
+                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                            {group.mode === 'presencial' ? <MapPin size={16} /> : <Video size={16} />}
+                            <span>{group.mode === 'presencial' ? group.location : 'Virtual'}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <Calendar size={16} />
+                            <span>{group.schedule}</span>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Calendar size={16} />
-                          <span>{group.schedule}</span>
+                        <div className="flex flex-wrap gap-2 mb-4">
+                            {group.topics.map((topic, idx) => (
+                            <Badge key={idx} variant="secondary" className="text-xs">
+                                {topic}
+                            </Badge>
+                            ))}
                         </div>
-                      </div>
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {group.topics.map((topic, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs">
-                            {topic}
-                          </Badge>
-                        ))}
-                      </div>
-                      <Button onClick={() => toast.success(`¡Solicitud enviada al grupo "${group.name}"!`)} className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 hover:opacity-90">
-                        Unirse al grupo
-                      </Button>
-                    </div>
-                  ))}
+                        <Button onClick={() => toast.success(`¡Solicitud enviada al grupo "${group.name}"!`)} className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 hover:opacity-90">
+                            Unirse al grupo
+                        </Button>
+                        </div>
+                    );
+                })}
               </div>
             </div>
           )}
