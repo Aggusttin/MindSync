@@ -1,50 +1,60 @@
-// --- CÓDIGO CORREGIDO ---
+// src/components/dashboard/CreateEventDialog.tsx
 
 import { useState } from 'react';
-import { X, Calendar, Clock, MapPin, Users, Eye, Volume2, Hand } from 'lucide-react';
+import { X, Eye, Volume2, Hand } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { toast } from 'sonner';
-import { Evento } from '../../lib/types'; // Importa el tipo
+import { Evento } from '../../lib/types';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   userType: 'universidad' | 'empresa';
-  // Recibe la función para crear eventos desde el Dashboard
+  // NUEVO: Recibimos el nombre del organizador
+  organizerName: string;
   onCreate: (data: Partial<Evento>) => Promise<boolean>; 
 }
 
-export function CreateEventDialog({ isOpen, onClose, userType, onCreate }: Props) {
+export function CreateEventDialog({ isOpen, onClose, userType, organizerName, onCreate }: Props) {
   const [formData, setFormData] = useState({
     title: '',
     date: '',
     time: '',
     capacity: '',
-    style: 'visual' as 'visual' | 'auditivo' | 'kinestesico',
+    type: 'visual' as 'visual' | 'auditivo' | 'kinestesico', // Cambiado de 'style' a 'type' para coincidir con la interfaz Evento
     mode: 'presencial' as 'presencial' | 'virtual',
     location: '',
   });
-  const [isLoading, setIsLoading] = useState(false); // Estado de carga
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validación simple
     if (!formData.title || !formData.date || !formData.time || !formData.capacity) {
       toast.error('Por favor completa todos los campos obligatorios');
       return;
     }
 
-    setIsLoading(true); // Activa el estado de carga
-    
-    // Llama a la función 'onCreate' (que viene de App.tsx)
-    const success = await onCreate({
-      ...formData,
-      capacity: parseInt(formData.capacity, 10), // Asegura que 'capacity' sea un número
-    });
+    if (formData.mode === 'presencial' && !formData.location) {
+      toast.error('Si el evento es presencial, debes indicar la ubicación');
+      return;
+    }
 
-    setIsLoading(false); // Desactiva el estado de carga
+    setIsLoading(true);
+    
+    // Preparamos los datos completos
+    const eventData = {
+      ...formData,
+      capacity: parseInt(formData.capacity, 10),
+      organizer: organizerName, // Añadimos el organizador aquí
+    };
+
+    const success = await onCreate(eventData);
+
+    setIsLoading(false);
 
     if (success) {
       toast.success('¡Evento creado exitosamente!');
@@ -55,12 +65,11 @@ export function CreateEventDialog({ isOpen, onClose, userType, onCreate }: Props
         date: '',
         time: '',
         capacity: '',
-        style: 'visual',
+        type: 'visual',
         mode: 'presencial',
         location: '',
       });
     }
-    // Si 'success' es falso, el hook useSystemState ya habrá mostrado un toast de error
   };
 
   if (!isOpen) return null;
@@ -82,9 +91,6 @@ export function CreateEventDialog({ isOpen, onClose, userType, onCreate }: Props
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          {/* ... (Todo el JSX del formulario se mantiene igual) ... */}
-          
-          {/* Ejemplo de campo 'title' (se mantiene igual) */}
           <div>
             <Label htmlFor="title">Título del evento *</Label>
             <Input
@@ -96,9 +102,101 @@ export function CreateEventDialog({ isOpen, onClose, userType, onCreate }: Props
             />
           </div>
 
-          {/* ... (Todos los demás campos del formulario aquí, añade 'disabled={isLoading}') ... */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="date">Fecha *</Label>
+              <Input
+                id="date"
+                type="date"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                disabled={isLoading}
+              />
+            </div>
+            <div>
+              <Label htmlFor="time">Hora *</Label>
+              <Input
+                id="time"
+                type="time"
+                value={formData.time}
+                onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                disabled={isLoading}
+              />
+            </div>
+          </div>
 
-          {/* Actions */}
+          <div>
+            <Label htmlFor="capacity">Capacidad máxima *</Label>
+            <Input
+              id="capacity"
+              type="number"
+              min="1"
+              value={formData.capacity}
+              onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
+              placeholder="Ej: 50"
+              disabled={isLoading}
+            />
+          </div>
+
+          <div>
+            <Label className="mb-3 block">Estilo de aprendizaje enfocado *</Label>
+            <div className="grid grid-cols-3 gap-3">
+              {styleOptions.map((style) => (
+                <button
+                  key={style.value}
+                  type="button"
+                  onClick={() => setFormData({ ...formData, type: style.value as any })}
+                  className={`p-4 border-2 rounded-xl transition-all ${
+                    formData.type === style.value ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  disabled={isLoading}
+                >
+                  <style.icon size={20} className="mx-auto mb-2" />
+                  <div className="text-sm text-gray-900">{style.label}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <Label className="mb-3 block">Modalidad *</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, mode: 'presencial' })}
+                className={`p-4 border-2 rounded-xl transition-all ${
+                  formData.mode === 'presencial' ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-gray-300'
+                }`}
+                disabled={isLoading}
+              >
+                <div className="text-sm text-gray-900 font-medium">Presencial</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, mode: 'virtual' })}
+                className={`p-4 border-2 rounded-xl transition-all ${
+                  formData.mode === 'virtual' ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-gray-300'
+                }`}
+                disabled={isLoading}
+              >
+                <div className="text-sm text-gray-900 font-medium">Virtual</div>
+              </button>
+            </div>
+          </div>
+
+          {formData.mode === 'presencial' && (
+            <div>
+              <Label htmlFor="location">Ubicación *</Label>
+              <Input
+                id="location"
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                placeholder="Ej: Aula Magna, Edificio A"
+                disabled={isLoading}
+              />
+            </div>
+          )}
+
           <div className="flex gap-3 pt-4">
             <Button type="button" variant="outline" className="flex-1" onClick={onClose} disabled={isLoading}>
               Cancelar

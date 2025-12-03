@@ -1,10 +1,11 @@
+// src/components/dashboard/CompanyDashboard.tsx
+
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { AuthData, Job } from '../../lib/types';
 import { Button } from '../ui/button';
 import { CreateJobDialog } from './CreateJobDialog';
 import { CreateEventDialog } from './CreateEventDialog';
-// --- NUEVOS IMPORTS ---
 import { Navbar } from '../Navbar';
 import { Footer } from '../Footer';
 
@@ -32,11 +33,12 @@ export function CompanyDashboard({ authData, onLogout, jobs, onAddJob, onAddEven
         isOpen={isEventDialogOpen} 
         onClose={() => setIsEventDialogOpen(false)} 
         userType="empresa"
+        // PASAMOS EL NOMBRE DE LA EMPRESA
+        organizerName={authData.institutionName || authData.name || 'Empresa'}
         onCreate={onAddEvent}
       />
       
       <div className="min-h-screen bg-gray-50 flex flex-col">
-        {/* --- NAVBAR --- */}
         <Navbar onLogout={onLogout} userName={authData.institutionName || authData.name} />
 
         <div className="max-w-7xl mx-auto px-4 py-8 flex-1 w-full">
@@ -72,6 +74,7 @@ export function CompanyDashboard({ authData, onLogout, jobs, onAddJob, onAddEven
                       <Button variant="outline" size="sm">Ver detalles</Button>
                     </div>
                   ))}
+                  {jobs.length === 0 && <p className="text-gray-500 text-sm text-center">No hay vacantes activas.</p>}
                 </div>
               </div>
             </div>
@@ -104,8 +107,6 @@ export function CompanyDashboard({ authData, onLogout, jobs, onAddJob, onAddEven
             </div>
           )}
         </div>
-
-        {/* --- FOOTER --- */}
         <Footer />
       </div>
     </>

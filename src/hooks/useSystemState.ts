@@ -1,42 +1,31 @@
-// --- CÓDIGO CORREGIDO: useSystemState.ts ---
+// src/hooks/useSystemState.ts
 
 import { useState, useEffect } from 'react';
-import { Evento, Job, Grupo, Recurso } from '../lib/types'; // Importa todos los tipos
+import { Evento, Job, Grupo, Recurso } from '../lib/types';
 import { 
   createEventInDB, 
   createJobInDB,
-  createGroupInDB, // Importa la nueva función
+  createGroupInDB, 
   getEventsFromDB, 
   getJobsFromDB,
-  getGroupsFromDB, // Importa la nueva función
-  getResourcesFromDB // Importa la nueva función
+  getGroupsFromDB, 
+  getResourcesFromDB 
 } from '../lib/db-service';
 import { toast } from 'sonner';
 
-/**
- * Este es el "cerebro" de la demo.
- * Carga todos los datos de Firebase una vez y los mantiene en el estado de React.
- * Proporciona funciones para agregar nuevos datos.
- */
 export function useSystemState() {
   const [events, setEvents] = useState<Evento[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [groups, setGroups] = useState<Grupo[]>([]); // Añadido
-  const [resources, setResources] = useState<Recurso[]>([]); // Añadido
+  const [groups, setGroups] = useState<Grupo[]>([]);
+  const [resources, setResources] = useState<Recurso[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Cargar datos reales desde Firebase al iniciar la app
+  // Cargar datos al iniciar
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Pedimos todos los datos a la vez para eficiencia
-        const [
-          fetchedEvents, 
-          fetchedJobs,
-          fetchedGroups,
-          fetchedResources
-        ] = await Promise.all([
+        const [fetchedEvents, fetchedJobs, fetchedGroups, fetchedResources] = await Promise.all([
           getEventsFromDB(),
           getJobsFromDB(),
           getGroupsFromDB(),
@@ -56,22 +45,25 @@ export function useSystemState() {
       }
     };
     fetchData();
-  }, []); // El array vacío [] asegura que esto solo se ejecute una vez
+  }, []);
 
-  // Función para que la Universidad/Empresa cree un evento
+  // --- FUNCIÓN CORREGIDA: addEvent ---
   const addEvent = async (newEventData: any) => {
     try {
+      // 1. Guardar en base de datos y obtener el objeto creado (con ID)
       const savedEvent = await createEventInDB(newEventData);
-      // Actualiza el estado local para que se vea el cambio al instante
+      
+      // 2. Actualizar estado local (agregarlo al principio de la lista)
       setEvents(prev => [savedEvent as Evento, ...prev]); 
+      
       return true;
     } catch (error) {
+      console.error(error);
       toast.error("No se pudo guardar el evento");
       return false;
     }
   };
 
-  // Función para que la Empresa cree una vacante
   const addJob = async (newJobData: any) => {
     try {
       const savedJob = await createJobInDB(newJobData);
@@ -83,11 +75,9 @@ export function useSystemState() {
     }
   };
   
-  // Función para que el Estudiante cree un grupo
   const addGroup = async (newGroupData: any) => {
     try {
       const savedGroup = await createGroupInDB(newGroupData);
-      // Actualiza el estado local para que se vea el cambio al instante
       setGroups(prev => [savedGroup as Grupo, ...prev]); 
       return true;
     } catch (error) {
@@ -99,11 +89,11 @@ export function useSystemState() {
   return {
     events,
     jobs,
-    groups,     // Retorna los grupos
-    resources,  // Retorna los recursos
+    groups,
+    resources,
     addEvent,
     addJob,
-    addGroup,   // Retorna la función de crear grupo
+    addGroup,
     loading
   };
 }
