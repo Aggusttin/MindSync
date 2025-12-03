@@ -1,5 +1,3 @@
-// src/lib/types.ts
-
 export type UserRole = 'estudiante' | 'universidad' | 'empresa';
 
 export interface AuthData {
@@ -32,8 +30,7 @@ export interface Evento {
   time: string;
   capacity: number;
   attendees: number;
-  // Lista de usuarios inscritos (emails)
-  attendeeIds?: string[]; 
+  attendeeIds?: string[]; // IMPORTANTE: Lista de inscritos
   type: 'visual' | 'auditivo' | 'kinestesico';
   mode: 'presencial' | 'virtual';
   organizer: string;
@@ -50,8 +47,7 @@ export interface Job {
   style: 'visual' | 'auditivo' | 'kinestesico';
   status: 'activo' | 'pausado' | 'borrador';
   applicants: number;
-  // Lista de usuarios postulados (emails)
-  applicantIds?: string[];
+  applicantIds?: string[]; // IMPORTANTE: Lista de postulantes
   postedDate: string;
   description?: string;
 }
@@ -61,6 +57,7 @@ export interface Grupo {
   name: string;
   members: number;
   maxMembers: number;
+  memberIds?: string[]; // IMPORTANTE: Lista de miembros
   style: 'visual' | 'auditivo' | 'kinestesico';
   mode: 'presencial' | 'virtual';
   location?: string;

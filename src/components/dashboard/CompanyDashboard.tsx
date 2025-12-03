@@ -20,7 +20,6 @@ export function CompanyDashboard({ authData, onLogout, jobs, onAddJob, onAddEven
   const [isJobDialogOpen, setIsJobDialogOpen] = useState(false);
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
 
-  // Obtenemos el nombre de la empresa
   const companyName = authData.institutionName || authData.name || 'Mi Empresa';
 
   return (
@@ -118,6 +117,7 @@ export function CompanyDashboard({ authData, onLogout, jobs, onAddJob, onAddEven
             </div>
           )}
         </div>
+
         <Footer />
       </div>
     </>

@@ -1,5 +1,3 @@
-// src/lib/db-service.ts
-
 import { 
   collection, 
   addDoc, 
@@ -35,10 +33,9 @@ export const registerUserInDB = async (userData: AuthData) => {
       createdAt: Timestamp.now(),
       onboardingCompleted: false 
     });
-    console.log("Usuario registrado en DB:", userData.email);
   } catch (error) {
     console.error("Error registrando usuario:", error);
-    throw new Error("Error en Firebase al registrar usuario.");
+    throw error;
   }
 };
 
@@ -46,166 +43,110 @@ export const getUserDataFromDB = async (email: string) => {
   try {
     const userRef = doc(db, USERS_COLLECTION, email);
     const docSnap = await getDoc(userRef);
-
-    if (docSnap.exists()) {
-      return docSnap.data() as AuthData; 
-    } else {
-      console.warn("No se encontraron datos para el usuario:", email);
-      return null;
-    }
+    if (docSnap.exists()) return docSnap.data() as AuthData; 
+    return null;
   } catch (error) {
-    console.error("Error obteniendo datos de usuario:", error);
-    throw new Error("Error en Firebase al obtener datos de usuario.");
+    console.error("Error obteniendo datos:", error);
+    throw error;
   }
 };
 
 export const createEventInDB = async (eventData: any) => {
-  try {
-    const docRef = await addDoc(collection(db, EVENTS_COLLECTION), {
-      ...eventData,
-      attendees: 0,
-      attendeeIds: [], // Inicializamos la lista vacía
-      status: 'publicado',
-      createdAt: Timestamp.now()
-    });
-    return { id: docRef.id, ...eventData, attendees: 0, attendeeIds: [], status: 'publicado' };
-  } catch (error) {
-    console.error("Error creando evento:", error);
-    throw new Error("Error en Firebase al crear evento.");
-  }
+  const docRef = await addDoc(collection(db, EVENTS_COLLECTION), {
+    ...eventData, attendees: 0, attendeeIds: [], status: 'publicado', createdAt: Timestamp.now()
+  });
+  return { id: docRef.id, ...eventData, attendees: 0, attendeeIds: [], status: 'publicado' };
 };
 
 export const getEventsFromDB = async (): Promise<Evento[]> => {
-  try {
-    const q = query(collection(db, EVENTS_COLLECTION), orderBy("createdAt", "desc"));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as unknown as Evento[];
-  } catch (error) {
-    console.error("Error obteniendo eventos:", error);
-    return [];
-  }
+  const q = query(collection(db, EVENTS_COLLECTION), orderBy("createdAt", "desc"));
+  const snap = await getDocs(q);
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as unknown as Evento[];
 };
 
 export const createJobInDB = async (jobData: any) => {
-  try {
-    const docRef = await addDoc(collection(db, JOBS_COLLECTION), {
-      ...jobData,
-      applicants: 0,
-      applicantIds: [], // Inicializamos la lista vacía
-      status: 'activo',
-      postedDate: new Date().toISOString().split('T')[0], 
-      createdAt: Timestamp.now()
-    });
-    return { id: docRef.id, ...jobData, applicants: 0, applicantIds: [], status: 'activo', postedDate: new Date().toISOString().split('T')[0] };
-  } catch (error) {
-    console.error("Error publicando vacante:", error);
-    throw new Error("Error en Firebase al crear vacante.");
-  }
+  const docRef = await addDoc(collection(db, JOBS_COLLECTION), {
+    ...jobData, applicants: 0, applicantIds: [], status: 'activo', postedDate: new Date().toISOString().split('T')[0], createdAt: Timestamp.now()
+  });
+  return { id: docRef.id, ...jobData, applicants: 0, applicantIds: [], status: 'activo' };
 };
 
 export const getJobsFromDB = async (): Promise<Job[]> => {
-  try {
-    const q = query(collection(db, JOBS_COLLECTION), orderBy("createdAt", "desc"));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as unknown as Job[];
-  } catch (error) {
-    console.error("Error obteniendo vacantes:", error);
-    return [];
-  }
+  const q = query(collection(db, JOBS_COLLECTION), orderBy("createdAt", "desc"));
+  const snap = await getDocs(q);
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as unknown as Job[];
 };
 
 export const createGroupInDB = async (groupData: any) => {
   try {
+    const initialMembers = groupData.creatorId ? [groupData.creatorId] : [];
+    const { creatorId, ...cleanData } = groupData; // Limpiamos creatorId antes de guardar
+    
     const docRef = await addDoc(collection(db, GROUPS_COLLECTION), {
-      ...groupData,
+      ...cleanData,
       members: 1, 
+      memberIds: initialMembers,
       createdAt: Timestamp.now()
     });
-    return { id: docRef.id, ...groupData, members: 1 };
+    return { id: docRef.id, ...cleanData, members: 1, memberIds: initialMembers };
   } catch (error) {
     console.error("Error creando grupo:", error);
-    throw new Error("Error en Firebase al crear grupo.");
+    throw error;
   }
 };
 
 export const getGroupsFromDB = async (): Promise<Grupo[]> => {
-  try {
-    const q = query(collection(db, GROUPS_COLLECTION), orderBy("createdAt", "desc"));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as unknown as Grupo[];
-  } catch (error) {
-    console.error("Error obteniendo grupos:", error);
-    return [];
-  }
+  const q = query(collection(db, GROUPS_COLLECTION), orderBy("createdAt", "desc"));
+  const snap = await getDocs(q);
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as unknown as Grupo[];
 };
 
 export const getResourcesFromDB = async (): Promise<Recurso[]> => {
-  try {
-    const q = query(collection(db, RESOURCES_COLLECTION), orderBy("createdAt", "desc"));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as unknown as Recurso[];
-  } catch (error) {
-    console.error("Error obteniendo recursos:", error);
-    return [];
-  }
+  const q = query(collection(db, RESOURCES_COLLECTION), orderBy("createdAt", "desc"));
+  const snap = await getDocs(q);
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as unknown as Recurso[];
 };
 
-// --- NUEVAS FUNCIONES PARA TOGGLE (Inscribir/Anular) ---
+// --- FUNCIONES CLAVE DE INTERACCIÓN ---
 
 export const toggleEventRegistrationInDB = async (eventId: string, userId: string, isRegistering: boolean) => {
   try {
-    const eventRef = doc(db, EVENTS_COLLECTION, eventId);
-    
+    const ref = doc(db, EVENTS_COLLECTION, eventId);
     if (isRegistering) {
-      // Agregar usuario y aumentar contador
-      await updateDoc(eventRef, {
-        attendees: increment(1),
-        attendeeIds: arrayUnion(userId)
-      });
+      await updateDoc(ref, { attendees: increment(1), attendeeIds: arrayUnion(userId) });
     } else {
-      // Quitar usuario y disminuir contador
-      await updateDoc(eventRef, {
-        attendees: increment(-1),
-        attendeeIds: arrayRemove(userId)
-      });
+      await updateDoc(ref, { attendees: increment(-1), attendeeIds: arrayRemove(userId) });
     }
     return true;
   } catch (error) {
-    console.error("Error actualizando inscripción al evento:", error);
-    return false;
+    console.error("Error toggle evento:", error); return false;
   }
 };
 
 export const toggleJobApplicationInDB = async (jobId: string, userId: string, isApplying: boolean) => {
   try {
-    const jobRef = doc(db, JOBS_COLLECTION, jobId);
-    
+    const ref = doc(db, JOBS_COLLECTION, jobId);
     if (isApplying) {
-      await updateDoc(jobRef, {
-        applicants: increment(1),
-        applicantIds: arrayUnion(userId)
-      });
+      await updateDoc(ref, { applicants: increment(1), applicantIds: arrayUnion(userId) });
     } else {
-      await updateDoc(jobRef, {
-        applicants: increment(-1),
-        applicantIds: arrayRemove(userId)
-      });
+      await updateDoc(ref, { applicants: increment(-1), applicantIds: arrayRemove(userId) });
     }
     return true;
   } catch (error) {
-    console.error("Error actualizando postulación a vacante:", error);
-    return false;
+    console.error("Error toggle vacante:", error); return false;
+  }
+};
+
+export const toggleGroupMembershipInDB = async (groupId: string, userId: string, isJoining: boolean) => {
+  try {
+    const ref = doc(db, GROUPS_COLLECTION, groupId);
+    if (isJoining) {
+      await updateDoc(ref, { members: increment(1), memberIds: arrayUnion(userId) });
+    } else {
+      await updateDoc(ref, { members: increment(-1), memberIds: arrayRemove(userId) });
+    }
+    return true;
+  } catch (error) {
+    console.error("Error toggle grupo:", error); return false;
   }
 };

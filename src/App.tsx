@@ -1,5 +1,3 @@
-// src/App.tsx
-
 import { useState } from 'react';
 import { Toaster } from './components/ui/sonner';
 import { Navbar } from './components/Navbar';
@@ -15,7 +13,6 @@ import { AuthFlow } from './components/auth/AuthFlow';
 import { StudentDashboard } from './components/dashboard/StudentDashboard';
 import { UniversityDashboard } from './components/dashboard/UniversityDashboard';
 import { CompanyDashboard } from './components/dashboard/CompanyDashboard';
-
 import { useSystemState } from './hooks/useSystemState'; 
 import { AuthData, OnboardingData } from './lib/types'; 
 
@@ -26,165 +23,48 @@ export default function App() {
   const [userData, setUserData] = useState<OnboardingData | null>(null);
   const [authData, setAuthData] = useState<AuthData | null>(null);
 
-  const { 
-    events, 
-    jobs, 
-    groups, 
-    resources, 
-    addEvent, 
-    addJob, 
-    addGroup, 
-    handleToggleEvent, 
-    handleToggleJob,   
-    loading 
-  } = useSystemState();
-
-  const handleShowAuth = () => {
-    setView('auth');
-  };
+  const { events, jobs, groups, resources, addEvent, addJob, addGroup, handleToggleEvent, handleToggleJob, handleToggleGroup, loading } = useSystemState();
 
   const handleLogin = (data: AuthData) => {
     setAuthData(data);
-    const fullUserData = data as OnboardingData; 
-    setUserData(fullUserData);
-
-    if (data.userType === 'estudiante' && !data.onboardingCompleted) {
-      setView('onboarding');
-    } else {
-      setView('dashboard');
-    }
+    setUserData(data as OnboardingData);
+    if (data.userType === 'estudiante' && !data.onboardingCompleted) setView('onboarding');
+    else setView('dashboard');
   };
 
   const handleRegister = (data: AuthData) => {
     setAuthData(data);
-    if (data.userType === 'estudiante') {
-      setView('onboarding');
-    } else {
-      setView('dashboard');
-    }
+    if (data.userType === 'estudiante') setView('onboarding');
+    else setView('dashboard');
   };
 
   const handleOnboardingComplete = (data: OnboardingData) => {
-    setUserData(data);
-    setView('dashboard');
+    setUserData(data); setView('dashboard');
   };
 
   const handleLogout = () => {
-    setAuthData(null);
-    setUserData(null);
-    setView('landing'); 
+    setAuthData(null); setUserData(null); setView('landing'); 
   };
 
-  if (view === 'auth') {
-    return (
-      <>
-        <Toaster />
-        <AuthFlow onLogin={handleLogin} onRegister={handleRegister} />
-      </>
-    );
-  }
-
-  if (view === 'onboarding') {
-    return (
-      <>
-        <Toaster />
-        <OnboardingFlow onComplete={handleOnboardingComplete} authData={authData} />
-      </>
-    );
-  }
+  if (view === 'auth') return <><Toaster /><AuthFlow onLogin={handleLogin} onRegister={handleRegister} /></>;
+  if (view === 'onboarding') return <><Toaster /><OnboardingFlow onComplete={handleOnboardingComplete} authData={authData} /></>;
 
   if (view === 'dashboard' && authData) {
-    if (loading) {
-      return (
-        <div className="min-h-screen flex items-center justify-center">
-          <p>Cargando datos del sistema...</p>
-        </div>
-      );
-    }
+    if (loading) return <div className="min-h-screen flex items-center justify-center">Cargando...</div>;
 
     if (authData.userType === 'estudiante') {
-      return (
-        <>
-          <Toaster />
-          <StudentDashboard 
-            userData={userData} 
-            authData={authData} 
-            onLogout={handleLogout}
-            allEvents={events}
-            allJobs={jobs}
-            allGroups={groups}
-            allResources={resources}
-            onAddGroup={addGroup}
-            onToggleEvent={handleToggleEvent}
-            onToggleJob={handleToggleJob}
-          />
-        </>
-      );
+      return <><Toaster /><StudentDashboard userData={userData} authData={authData} onLogout={handleLogout} allEvents={events} allJobs={jobs} allGroups={groups} allResources={resources} onAddGroup={addGroup} onToggleEvent={handleToggleEvent} onToggleJob={handleToggleJob} onToggleGroup={handleToggleGroup} /></>;
     } 
-    
     if (authData.userType === 'universidad') {
-      return (
-        <>
-          <Toaster />
-          <UniversityDashboard 
-            authData={authData} 
-            onLogout={handleLogout}
-            events={events}
-            onAddEvent={addEvent}
-          />
-        </>
-      );
+      return <><Toaster /><UniversityDashboard authData={authData} onLogout={handleLogout} events={events} onAddEvent={addEvent} /></>;
     } 
-    
     if (authData.userType === 'empresa') {
-      return (
-        <>
-          <Toaster />
-          <CompanyDashboard 
-            authData={authData} 
-            onLogout={handleLogout}
-            jobs={jobs}
-            onAddJob={addJob}
-            onAddEvent={addEvent}
-          />
-        </>
-      );
+      return <><Toaster /><CompanyDashboard authData={authData} onLogout={handleLogout} jobs={jobs} onAddJob={addJob} onAddEvent={addEvent} /></>;
     }
-
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <h1 className="text-xl font-bold text-red-600">Error de Perfil</h1>
-        <p>El usuario <strong>{authData.email}</strong> tiene un rol desconocido.</p>
-        <button onClick={handleLogout} className="underline text-blue-600">Cerrar sesión</button>
-      </div>
-    );
+    return <div>Error de perfil <button onClick={handleLogout}>Salir</button></div>;
   }
 
   return (
-    <>
-      <Toaster />
-      <div className="min-h-screen bg-white">
-        <Navbar onStartOnboarding={handleShowAuth} />
-        <main>
-          <div id="inicio">
-            <Hero onStartOnboarding={handleShowAuth} />
-          </div>
-          <div id="estilos">
-            <LearningStyles />
-          </div>
-          <div id="como-funciona">
-            <HowItWorks />
-          </div>
-          <div id="perfiles">
-            <UserProfiles />
-          </div>
-          <div id="caracteristicas">
-            <Features />
-          </div>
-          <CTA onStartOnboarding={handleShowAuth} />
-        </main>
-        <Footer />
-      </div>
-    </>
+    <><Toaster /><div className="min-h-screen bg-white"><Navbar onStartOnboarding={() => setView('auth')} /><main><Hero onStartOnboarding={() => setView('auth')} /><LearningStyles /><HowItWorks /><UserProfiles /><Features /><CTA onStartOnboarding={() => setView('auth')} /></main><Footer /></div></>
   );
 }

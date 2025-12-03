@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Eye, Volume2, Hand } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { AuthData, Evento } from '../../lib/types';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -24,7 +24,6 @@ export function UniversityDashboard({ authData, onLogout, events, onAddEvent }: 
         isOpen={isEventDialogOpen} 
         onClose={() => setIsEventDialogOpen(false)} 
         userType="universidad"
-        // Pasamos el nombre de la institución
         organizerName={authData.institutionName || authData.name || 'Universidad'}
         onCreate={onAddEvent} 
       />

@@ -24,6 +24,7 @@ interface Props {
   onAddGroup: (data: any) => Promise<boolean>;
   onToggleEvent: (eventId: string | number, userId: string, isRegistering: boolean) => Promise<void>;
   onToggleJob: (jobId: string | number, userId: string, isApplying: boolean) => Promise<void>;
+  onToggleGroup: (groupId: string | number, userId: string, isJoining: boolean) => Promise<void>;
 }
 
 const styleInfo = {
@@ -42,7 +43,8 @@ export function StudentDashboard({
   allResources,
   onAddGroup,
   onToggleEvent,
-  onToggleJob
+  onToggleJob,
+  onToggleGroup
 }: Props) {
   const [activeTab, setActiveTab] = useState<'inicio' | 'grupos' | 'eventos' | 'empleos' | 'recursos'>('inicio');
   const [isGroupDialogOpen, setIsGroupDialogOpen] = useState(false);
@@ -56,9 +58,20 @@ export function StudentDashboard({
     onToggleEvent(event.id, userId, !isRegistered);
   };
 
-  // Iconos para las tabs
+  const handleGroupAction = (group: Grupo) => {
+    const isMember = group.memberIds?.includes(userId);
+    onToggleGroup(group.id, userId, !isMember);
+  };
+
+  const handleCreateGroupWithUser = async (data: Partial<Grupo>) => {
+    return await onAddGroup({
+        ...data,
+        creatorId: userId 
+    });
+  };
+
   const tabs = [
-    { id: 'inicio', label: 'Inicio', icon: <Users size={18} /> }, // Usando icono genérico para inicio si no hay uno específico
+    { id: 'inicio', label: 'Inicio', icon: <Users size={18} /> },
     { id: 'grupos', label: 'Grupos', icon: <Users size={18} /> },
     { id: 'eventos', label: 'Eventos', icon: <Calendar size={18} /> },
     { id: 'empleos', label: 'Empleos', icon: <Briefcase size={18} /> },
@@ -70,7 +83,7 @@ export function StudentDashboard({
       <CreateGroupDialog 
         isOpen={isGroupDialogOpen} 
         onClose={() => setIsGroupDialogOpen(false)} 
-        onCreate={onAddGroup} 
+        onCreate={handleCreateGroupWithUser} 
       />
 
       <JobDetailsDialog 
@@ -214,7 +227,7 @@ export function StudentDashboard({
                                     size="sm" 
                                     variant="secondary"
                                     className="w-full bg-gray-50 hover:bg-gray-100 text-gray-900 font-medium h-9"
-                                    onClick={() => setActiveTab('eventos')} // O llevar al detalle
+                                    onClick={() => setActiveTab('eventos')}
                                 >
                                     Ver detalles
                                 </Button>
@@ -230,12 +243,9 @@ export function StudentDashboard({
             </div>
           )}
 
-          {/* --- OTRAS PESTAÑAS (GRUPOS, EVENTOS, EMPLEOS...) --- */}
-          {/* Mantenemos el código anterior para el resto de pestañas, que ya funcionaba bien */}
-          
+          {/* PESTAÑA GRUPOS */}
           {activeTab === 'grupos' && (
             <div>
-              {/* ... (Código de grupos de la respuesta anterior) ... */}
               <div className="mb-6 flex flex-col sm:flex-row gap-4 justify-between items-center">
                 <div className="flex-1 flex gap-4 w-full">
                   <div className="flex-1 relative">
@@ -259,8 +269,10 @@ export function StudentDashboard({
                 {allGroups.map((group) => {
                     const styleData = styleInfo[group.style];
                     const GroupIcon = styleData.icon;
+                    const isMember = group.memberIds?.includes(userId);
+
                     return (
-                        <div key={group.id} className="bg-white rounded-2xl p-6 border border-gray-200 hover:shadow-lg transition-shadow">
+                        <div key={group.id} className={`bg-white rounded-2xl p-6 border hover:shadow-lg transition-shadow ${isMember ? 'border-green-200 ring-1 ring-green-100' : 'border-gray-200'}`}>
                         <div className="flex items-start justify-between mb-4">
                             <div>
                             <h3 className="text-lg text-gray-900 mb-2">{group.name}</h3>
@@ -269,9 +281,12 @@ export function StudentDashboard({
                                 <span>{styleData.name}</span>
                             </div>
                             </div>
-                            <Badge variant="outline">
-                            {group.members}/{group.maxMembers} miembros
-                            </Badge>
+                            <div className="flex flex-col items-end gap-1">
+                                <Badge variant="outline">
+                                {group.members}/{group.maxMembers}
+                                </Badge>
+                                {isMember && <span className="text-xs text-green-600 font-medium">Miembro</span>}
+                            </div>
                         </div>
                         <div className="space-y-2 mb-4">
                             <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -290,8 +305,12 @@ export function StudentDashboard({
                             </Badge>
                             ))}
                         </div>
-                        <Button onClick={() => toast.success(`¡Solicitud enviada al grupo "${group.name}"!`)} className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 hover:opacity-90">
-                            Unirse al grupo
+                        <Button 
+                            onClick={() => handleGroupAction(group)} 
+                            className={`w-full ${isMember ? 'bg-white border-red-200 text-red-600 hover:bg-red-50' : 'bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 hover:opacity-90 text-white'}`}
+                            variant={isMember ? "outline" : "default"}
+                        >
+                            {isMember ? "Salir del grupo" : "Unirse al grupo"}
                         </Button>
                         </div>
                     );
@@ -300,6 +319,7 @@ export function StudentDashboard({
             </div>
           )}
 
+          {/* PESTAÑA EVENTOS */}
           {activeTab === 'eventos' && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {allEvents.map((event) => {
@@ -335,6 +355,7 @@ export function StudentDashboard({
             </div>
           )}
 
+          {/* PESTAÑA EMPLEOS */}
           {activeTab === 'empleos' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {allJobs.map((job) => {
@@ -374,6 +395,7 @@ export function StudentDashboard({
             </div>
           )}
 
+          {/* PESTAÑA RECURSOS */}
           {activeTab === 'recursos' && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {allResources.map((resource) => {
