@@ -27,7 +27,7 @@ export function useSystemState() {
       setResources(resourcesData);
     } catch (error) {
       console.error("Error fetching data:", error);
-      toast.error("Error al cargar datos.");
+      toast.error("Error al cargar datos del sistema.");
     } finally {
       setLoading(false);
     }
@@ -70,18 +70,22 @@ export function useSystemState() {
     return false;
   };
 
-  // Maneja inscripción/anulación de eventos
+  // --- LÓGICA DE INSCRIPCIÓN / ANULACIÓN DE EVENTOS ---
   const handleToggleEvent = async (eventId: string | number, userId: string, isRegistering: boolean) => {
     const idString = String(eventId);
+    // 1. Llamada a la DB
     const success = await db.toggleEventRegistrationInDB(idString, userId, isRegistering);
     
     if (success) {
+      // 2. Actualización Local
       setEvents(prev => prev.map(ev => {
         if (String(ev.id) === idString) {
           const currentIds = ev.attendeeIds || [];
           return {
             ...ev,
+            // Actualizar contador
             attendees: isRegistering ? ev.attendees + 1 : ev.attendees - 1,
+            // Actualizar lista de inscritos
             attendeeIds: isRegistering 
               ? [...currentIds, userId] 
               : currentIds.filter(id => id !== userId)
@@ -95,7 +99,7 @@ export function useSystemState() {
     }
   };
 
-  // Maneja postulación/anulación de empleos
+  // --- LÓGICA DE POSTULACIÓN / ANULACIÓN DE EMPLEOS ---
   const handleToggleJob = async (jobId: string | number, userId: string, isApplying: boolean) => {
     const idString = String(jobId);
     const success = await db.toggleJobApplicationInDB(idString, userId, isApplying);
@@ -129,8 +133,8 @@ export function useSystemState() {
     addEvent,
     addJob,
     addGroup,
-    handleToggleEvent,
-    handleToggleJob,
+    handleToggleEvent, // Exportamos
+    handleToggleJob,   // Exportamos
     refreshData: fetchData
   };
 }

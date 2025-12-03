@@ -55,6 +55,7 @@ export function StudentDashboard({
 
   const handleEventAction = (event: Evento) => {
     const isRegistered = event.attendeeIds?.includes(userId);
+    // Llama a la función del hook pasando si se quiere inscribir o anular
     onToggleEvent(event.id, userId, !isRegistered);
   };
 

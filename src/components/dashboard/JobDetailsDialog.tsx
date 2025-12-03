@@ -17,6 +17,7 @@ interface Props {
 export function JobDetailsDialog({ isOpen, onClose, job, userId, onToggleJob }: Props) {
   if (!job) return null;
 
+  // Verificamos si el usuario ya está en la lista de aplicantes
   const isApplied = job.applicantIds?.includes(userId);
 
   const handleAction = async () => {
@@ -41,9 +42,10 @@ export function JobDetailsDialog({ isOpen, onClose, job, userId, onToggleJob }: 
                 <Badge variant="secondary" className="text-sm px-3 py-1">
                 {job.type}
                 </Badge>
+                {/* Indicador visual si ya está inscrito */}
                 {isApplied && (
                     <span className="text-xs text-green-600 flex items-center gap-1 font-medium bg-green-50 px-2 py-1 rounded-full">
-                        <CheckCircle2 size={12}/> Postulado
+                        <CheckCircle2 size={12}/> Inscripción realizada
                     </span>
                 )}
             </div>
@@ -76,6 +78,7 @@ export function JobDetailsDialog({ isOpen, onClose, job, userId, onToggleJob }: 
             Cerrar
           </Button>
           
+          {/* Botón dinámico */}
           <Button 
             onClick={handleAction} 
             variant={isApplied ? "destructive" : "default"}
@@ -86,7 +89,7 @@ export function JobDetailsDialog({ isOpen, onClose, job, userId, onToggleJob }: 
           >
             {isApplied ? (
                 <>
-                    <XCircle size={18} className="mr-2"/> Anular postulación
+                    <XCircle size={18} className="mr-2"/> Anular inscripción de vacante
                 </>
             ) : (
                 "Postularme ahora"

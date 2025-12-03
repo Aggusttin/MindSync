@@ -64,7 +64,7 @@ export const createEventInDB = async (eventData: any) => {
     const docRef = await addDoc(collection(db, EVENTS_COLLECTION), {
       ...eventData,
       attendees: 0,
-      attendeeIds: [],
+      attendeeIds: [], // Inicializamos la lista vacía
       status: 'publicado',
       createdAt: Timestamp.now()
     });
@@ -94,7 +94,7 @@ export const createJobInDB = async (jobData: any) => {
     const docRef = await addDoc(collection(db, JOBS_COLLECTION), {
       ...jobData,
       applicants: 0,
-      applicantIds: [],
+      applicantIds: [], // Inicializamos la lista vacía
       status: 'activo',
       postedDate: new Date().toISOString().split('T')[0], 
       createdAt: Timestamp.now()
@@ -162,18 +162,20 @@ export const getResourcesFromDB = async (): Promise<Recurso[]> => {
   }
 };
 
-// --- NUEVAS FUNCIONES PARA TOGGLE ---
+// --- NUEVAS FUNCIONES PARA TOGGLE (Inscribir/Anular) ---
 
 export const toggleEventRegistrationInDB = async (eventId: string, userId: string, isRegistering: boolean) => {
   try {
     const eventRef = doc(db, EVENTS_COLLECTION, eventId);
     
     if (isRegistering) {
+      // Agregar usuario y aumentar contador
       await updateDoc(eventRef, {
         attendees: increment(1),
         attendeeIds: arrayUnion(userId)
       });
     } else {
+      // Quitar usuario y disminuir contador
       await updateDoc(eventRef, {
         attendees: increment(-1),
         attendeeIds: arrayRemove(userId)

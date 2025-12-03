@@ -34,8 +34,8 @@ export default function App() {
     addEvent, 
     addJob, 
     addGroup, 
-    handleToggleEvent, // NUEVO
-    handleToggleJob,   // NUEVO
+    handleToggleEvent, 
+    handleToggleJob,   
     loading 
   } = useSystemState();
 
@@ -115,8 +115,8 @@ export default function App() {
             allGroups={groups}
             allResources={resources}
             onAddGroup={addGroup}
-            onToggleEvent={handleToggleEvent} // NUEVO
-            onToggleJob={handleToggleJob}     // NUEVO
+            onToggleEvent={handleToggleEvent}
+            onToggleJob={handleToggleJob}
           />
         </>
       );

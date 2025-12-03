@@ -32,7 +32,7 @@ export interface Evento {
   time: string;
   capacity: number;
   attendees: number;
-  // Lista de usuarios inscritos
+  // Lista de usuarios inscritos (emails)
   attendeeIds?: string[]; 
   type: 'visual' | 'auditivo' | 'kinestesico';
   mode: 'presencial' | 'virtual';
@@ -50,7 +50,7 @@ export interface Job {
   style: 'visual' | 'auditivo' | 'kinestesico';
   status: 'activo' | 'pausado' | 'borrador';
   applicants: number;
-  // Lista de usuarios postulados
+  // Lista de usuarios postulados (emails)
   applicantIds?: string[];
   postedDate: string;
   description?: string;
