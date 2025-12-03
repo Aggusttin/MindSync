@@ -1,11 +1,9 @@
-// src/components/dashboard/CreateJobDialog.tsx
-
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Textarea } from '../ui/textarea'; // Asegúrate de tener este componente, si no usa Input
+import { Textarea } from '../ui/textarea'; 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { toast } from 'sonner';
 
@@ -13,7 +11,7 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onCreate: (data: any) => Promise<boolean>;
-  companyName: string; // Nuevo: Recibimos el nombre de la empresa
+  companyName: string; 
 }
 
 export function CreateJobDialog({ isOpen, onClose, onCreate, companyName }: Props) {
@@ -29,7 +27,6 @@ export function CreateJobDialog({ isOpen, onClose, onCreate, companyName }: Prop
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validaciones
     if (!formData.title || !formData.location || !formData.description) {
       toast.error('Por favor completa todos los campos obligatorios');
       return;
@@ -38,17 +35,15 @@ export function CreateJobDialog({ isOpen, onClose, onCreate, companyName }: Prop
     setIsLoading(true);
 
     try {
-      // Preparamos los datos incluyendo el nombre de la empresa
       const jobData = {
         ...formData,
-        company: companyName, // Guardamos quién publica
+        company: companyName,
       };
       
       const success = await onCreate(jobData);
 
       if (success) {
         toast.success('¡Vacante creada exitosamente!');
-        // Reset del formulario
         setFormData({
           title: '',
           type: 'Tiempo completo',
@@ -67,10 +62,6 @@ export function CreateJobDialog({ isOpen, onClose, onCreate, companyName }: Prop
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      {/* CORRECCIÓN VISUAL CLAVE:
-          Agregamos 'max-h-[90vh]' y 'overflow-y-auto' para evitar que se corte el contenido
-          y permitir hacer scroll si la pantalla es pequeña.
-      */}
       <DialogContent className="sm:max-w-[600px] bg-white max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Publicar nueva vacante</DialogTitle>
@@ -78,7 +69,6 @@ export function CreateJobDialog({ isOpen, onClose, onCreate, companyName }: Prop
 
         <form onSubmit={handleSubmit} className="space-y-5 py-4">
           
-          {/* Título */}
           <div className="grid gap-2">
             <Label htmlFor="title">Título del puesto *</Label>
             <Input
@@ -91,7 +81,6 @@ export function CreateJobDialog({ isOpen, onClose, onCreate, companyName }: Prop
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {/* Tipo de contrato */}
             <div className="grid gap-2">
               <Label htmlFor="type">Tipo de contrato</Label>
               <Select
@@ -111,7 +100,6 @@ export function CreateJobDialog({ isOpen, onClose, onCreate, companyName }: Prop
               </Select>
             </div>
 
-            {/* Estilo de aprendizaje sugerido */}
             <div className="grid gap-2">
               <Label htmlFor="style">Perfil ideal</Label>
               <Select
@@ -131,7 +119,6 @@ export function CreateJobDialog({ isOpen, onClose, onCreate, companyName }: Prop
             </div>
           </div>
 
-          {/* Ubicación */}
           <div className="grid gap-2">
             <Label htmlFor="location">Ubicación *</Label>
             <Input
@@ -143,7 +130,6 @@ export function CreateJobDialog({ isOpen, onClose, onCreate, companyName }: Prop
             />
           </div>
 
-          {/* Descripción */}
           <div className="grid gap-2">
             <Label htmlFor="description">Descripción del puesto *</Label>
             <Textarea
@@ -156,7 +142,6 @@ export function CreateJobDialog({ isOpen, onClose, onCreate, companyName }: Prop
             />
           </div>
 
-          {/* Botones */}
           <div className="flex justify-end gap-3 pt-4">
             <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
               Cancelar

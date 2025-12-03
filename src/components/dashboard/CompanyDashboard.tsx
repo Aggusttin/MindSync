@@ -1,5 +1,3 @@
-// src/components/dashboard/CompanyDashboard.tsx
-
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { AuthData, Job } from '../../lib/types';
@@ -22,7 +20,7 @@ export function CompanyDashboard({ authData, onLogout, jobs, onAddJob, onAddEven
   const [isJobDialogOpen, setIsJobDialogOpen] = useState(false);
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
 
-  // Obtenemos el nombre de la empresa de los datos de autenticación
+  // Obtenemos el nombre de la empresa
   const companyName = authData.institutionName || authData.name || 'Mi Empresa';
 
   return (
@@ -31,7 +29,6 @@ export function CompanyDashboard({ authData, onLogout, jobs, onAddJob, onAddEven
         isOpen={isJobDialogOpen} 
         onClose={() => setIsJobDialogOpen(false)} 
         onCreate={onAddJob}
-        // PASAMOS EL NOMBRE DE LA EMPRESA AQUÍ
         companyName={companyName}
       />
       
@@ -39,13 +36,11 @@ export function CompanyDashboard({ authData, onLogout, jobs, onAddJob, onAddEven
         isOpen={isEventDialogOpen} 
         onClose={() => setIsEventDialogOpen(false)} 
         userType="empresa"
-        // También pasamos el nombre al evento por si acaso
         organizerName={companyName}
         onCreate={onAddEvent}
       />
       
       <div className="min-h-screen bg-gray-50 flex flex-col">
-        {/* --- NAVBAR --- */}
         <Navbar onLogout={onLogout} userName={companyName} />
 
         <div className="max-w-7xl mx-auto px-4 py-8 flex-1 w-full">
@@ -123,8 +118,6 @@ export function CompanyDashboard({ authData, onLogout, jobs, onAddJob, onAddEven
             </div>
           )}
         </div>
-
-        {/* --- FOOTER --- */}
         <Footer />
       </div>
     </>

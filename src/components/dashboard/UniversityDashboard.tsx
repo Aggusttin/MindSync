@@ -1,5 +1,3 @@
-// src/components/dashboard/UniversityDashboard.tsx
-
 import { useState } from 'react';
 import { Plus, Eye, Volume2, Hand } from 'lucide-react';
 import { AuthData, Evento } from '../../lib/types';
@@ -16,14 +14,8 @@ interface Props {
   onAddEvent: (data: any) => Promise<boolean>;
 }
 
-const styleStats = {
-  visual: { icon: Eye, color: 'from-blue-500 to-blue-600' },
-  auditivo: { icon: Volume2, color: 'from-green-500 to-green-600' },
-  kinestesico: { icon: Hand, color: 'from-orange-500 to-orange-600' },
-};
-
 export function UniversityDashboard({ authData, onLogout, events, onAddEvent }: Props) {
-  const [activeTab, setActiveTab] = useState<'inicio' | 'eventos'>('inicio');
+  const [activeTab, setActiveTab] = useState<'inicio' | 'eventos' | 'estudiantes' | 'analytics'>('inicio');
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
 
   return (
@@ -32,7 +24,7 @@ export function UniversityDashboard({ authData, onLogout, events, onAddEvent }: 
         isOpen={isEventDialogOpen} 
         onClose={() => setIsEventDialogOpen(false)} 
         userType="universidad"
-        // PASAMOS EL NOMBRE DE LA UNIVERSIDAD
+        // Pasamos el nombre de la institución
         organizerName={authData.institutionName || authData.name || 'Universidad'}
         onCreate={onAddEvent} 
       />
@@ -41,12 +33,11 @@ export function UniversityDashboard({ authData, onLogout, events, onAddEvent }: 
         <Navbar onLogout={onLogout} userName={authData.institutionName || authData.name} />
 
         <div className="max-w-7xl mx-auto px-4 py-8 flex-1 w-full">
-          {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               Panel de {authData.institutionName}
             </h1>
-            <p className="text-gray-600 mb-6">Gestiona eventos y visualiza estadísticas.</p>
+            <p className="text-gray-600 mb-6">Gestiona eventos y visualiza estadísticas de tus estudiantes.</p>
             
             <div className="flex gap-4 border-b border-gray-200 pb-1">
               <Button variant={activeTab === 'inicio' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('inicio')}>Inicio</Button>
@@ -54,7 +45,6 @@ export function UniversityDashboard({ authData, onLogout, events, onAddEvent }: 
             </div>
           </div>
 
-          {/* Content */}
           {activeTab === 'inicio' && (
             <div className="space-y-6">
               <div className="bg-white rounded-2xl p-6 border border-gray-200">
@@ -80,9 +70,6 @@ export function UniversityDashboard({ authData, onLogout, events, onAddEvent }: 
                       </Badge>
                     </div>
                   ))}
-                  {events.length === 0 && (
-                    <p className="text-gray-500 text-sm text-center py-4">No hay eventos creados aún.</p>
-                  )}
                 </div>
               </div>
             </div>
@@ -102,21 +89,17 @@ export function UniversityDashboard({ authData, onLogout, events, onAddEvent }: 
               </div>
 
               <div className="grid grid-cols-1 gap-4">
-                {events.map((event) => (
-                  <div key={event.id} className="bg-white rounded-2xl p-6 border border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                      <h3 className="text-lg font-semibold">{event.title}</h3>
-                      <p className="text-sm text-gray-500">
-                        {new Date(event.date).toLocaleDateString()} - {event.time} | {event.mode}
-                      </p>
-                      {event.location && <p className="text-xs text-gray-400 mt-1">{event.location}</p>}
-                    </div>
-                    <div className="flex items-center gap-3">
+                {events.map((event) => {
+                  return (
+                    <div key={event.id} className="bg-white rounded-2xl p-6 border border-gray-200 flex justify-between items-center">
+                      <div>
+                        <h3 className="text-lg font-semibold">{event.title}</h3>
+                        <p className="text-sm text-gray-500">{new Date(event.date).toLocaleDateString()}</p>
+                      </div>
                       <Badge>{event.type}</Badge>
-                      <Badge variant="outline">{event.status}</Badge>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
