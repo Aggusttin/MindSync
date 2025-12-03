@@ -7,31 +7,29 @@ import {
   Timestamp,
   doc,
   setDoc,
-  getDoc, 
+  getDoc,
   orderBy,
-  query
+  query,
+  updateDoc,
+  increment,
+  arrayUnion,
+  arrayRemove
 } from "firebase/firestore";
 import { db } from "./firebase"; 
 import { Evento, Job, AuthData, Grupo, Recurso } from "./types"; 
 
-// Nombres de las "carpetas" en la base de datos
 const USERS_COLLECTION = "users";
 const EVENTS_COLLECTION = "events";
 const JOBS_COLLECTION = "jobs";
 const GROUPS_COLLECTION = "groups";
 const RESOURCES_COLLECTION = "resources"; 
 
-/**
- * Guarda un nuevo usuario en la colección 'users'.
- * CORREGIDO: Ahora guarda 'userType' en lugar de 'role'.
- */
 export const registerUserInDB = async (userData: AuthData) => {
   try {
     const userRef = doc(db, USERS_COLLECTION, userData.email);
     await setDoc(userRef, {
       email: userData.email,
       name: userData.name || '',
-      // --- CORRECCIÓN AQUÍ: Usamos userType ---
       userType: userData.userType, 
       institutionName: userData.institutionName || null,
       createdAt: Timestamp.now(),
@@ -44,9 +42,6 @@ export const registerUserInDB = async (userData: AuthData) => {
   }
 };
 
-/**
- * Obtiene los datos de un usuario desde Firestore usando su email.
- */
 export const getUserDataFromDB = async (email: string) => {
   try {
     const userRef = doc(db, USERS_COLLECTION, email);
@@ -64,18 +59,16 @@ export const getUserDataFromDB = async (email: string) => {
   }
 };
 
-/**
- * Crea un nuevo documento en la colección 'events'.
- */
 export const createEventInDB = async (eventData: any) => {
   try {
     const docRef = await addDoc(collection(db, EVENTS_COLLECTION), {
       ...eventData,
       attendees: 0,
+      attendeeIds: [],
       status: 'publicado',
       createdAt: Timestamp.now()
     });
-    return { id: docRef.id, ...eventData, attendees: 0, status: 'publicado' };
+    return { id: docRef.id, ...eventData, attendees: 0, attendeeIds: [], status: 'publicado' };
   } catch (error) {
     console.error("Error creando evento:", error);
     throw new Error("Error en Firebase al crear evento.");
@@ -101,11 +94,12 @@ export const createJobInDB = async (jobData: any) => {
     const docRef = await addDoc(collection(db, JOBS_COLLECTION), {
       ...jobData,
       applicants: 0,
+      applicantIds: [],
       status: 'activo',
       postedDate: new Date().toISOString().split('T')[0], 
       createdAt: Timestamp.now()
     });
-    return { id: docRef.id, ...jobData, applicants: 0, status: 'activo', postedDate: new Date().toISOString().split('T')[0] };
+    return { id: docRef.id, ...jobData, applicants: 0, applicantIds: [], status: 'activo', postedDate: new Date().toISOString().split('T')[0] };
   } catch (error) {
     console.error("Error publicando vacante:", error);
     throw new Error("Error en Firebase al crear vacante.");
@@ -165,5 +159,51 @@ export const getResourcesFromDB = async (): Promise<Recurso[]> => {
   } catch (error) {
     console.error("Error obteniendo recursos:", error);
     return [];
+  }
+};
+
+// --- NUEVAS FUNCIONES PARA TOGGLE ---
+
+export const toggleEventRegistrationInDB = async (eventId: string, userId: string, isRegistering: boolean) => {
+  try {
+    const eventRef = doc(db, EVENTS_COLLECTION, eventId);
+    
+    if (isRegistering) {
+      await updateDoc(eventRef, {
+        attendees: increment(1),
+        attendeeIds: arrayUnion(userId)
+      });
+    } else {
+      await updateDoc(eventRef, {
+        attendees: increment(-1),
+        attendeeIds: arrayRemove(userId)
+      });
+    }
+    return true;
+  } catch (error) {
+    console.error("Error actualizando inscripción al evento:", error);
+    return false;
+  }
+};
+
+export const toggleJobApplicationInDB = async (jobId: string, userId: string, isApplying: boolean) => {
+  try {
+    const jobRef = doc(db, JOBS_COLLECTION, jobId);
+    
+    if (isApplying) {
+      await updateDoc(jobRef, {
+        applicants: increment(1),
+        applicantIds: arrayUnion(userId)
+      });
+    } else {
+      await updateDoc(jobRef, {
+        applicants: increment(-1),
+        applicantIds: arrayRemove(userId)
+      });
+    }
+    return true;
+  } catch (error) {
+    console.error("Error actualizando postulación a vacante:", error);
+    return false;
   }
 };

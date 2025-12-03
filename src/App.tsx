@@ -23,8 +23,6 @@ type AppView = 'landing' | 'auth' | 'onboarding' | 'dashboard';
 
 export default function App() {
   const [view, setView] = useState<AppView>('landing');
-  
-  // State de Sesión
   const [userData, setUserData] = useState<OnboardingData | null>(null);
   const [authData, setAuthData] = useState<AuthData | null>(null);
 
@@ -36,26 +34,20 @@ export default function App() {
     addEvent, 
     addJob, 
     addGroup, 
+    handleToggleEvent, // NUEVO
+    handleToggleJob,   // NUEVO
     loading 
   } = useSystemState();
-
-  const handleStartOnboarding = () => {
-    setView('onboarding');
-  };
 
   const handleShowAuth = () => {
     setView('auth');
   };
 
   const handleLogin = (data: AuthData) => {
-    console.log("App recibió login:", data); // Debug
     setAuthData(data);
-    
-    // Al usar ...userData en Login, 'data' ahora tiene todo el perfil
     const fullUserData = data as OnboardingData; 
     setUserData(fullUserData);
 
-    // Lógica de redirección
     if (data.userType === 'estudiante' && !data.onboardingCompleted) {
       setView('onboarding');
     } else {
@@ -82,8 +74,6 @@ export default function App() {
     setUserData(null);
     setView('landing'); 
   };
-
-  // --- Renderizado de Vistas ---
 
   if (view === 'auth') {
     return (
@@ -125,6 +115,8 @@ export default function App() {
             allGroups={groups}
             allResources={resources}
             onAddGroup={addGroup}
+            onToggleEvent={handleToggleEvent} // NUEVO
+            onToggleJob={handleToggleJob}     // NUEVO
           />
         </>
       );
@@ -159,17 +151,15 @@ export default function App() {
       );
     }
 
-    // Si llegamos aquí, hay un usuario pero el rol no coincide con ninguno
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
         <h1 className="text-xl font-bold text-red-600">Error de Perfil</h1>
-        <p>El usuario <strong>{authData.email}</strong> tiene un rol desconocido: "{authData.userType || 'Sin rol'}"</p>
+        <p>El usuario <strong>{authData.email}</strong> tiene un rol desconocido.</p>
         <button onClick={handleLogout} className="underline text-blue-600">Cerrar sesión</button>
       </div>
     );
   }
 
-  // Vista por defecto: Landing Page
   return (
     <>
       <Toaster />

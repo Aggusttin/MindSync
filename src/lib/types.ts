@@ -8,9 +8,7 @@ export interface AuthData {
   userType: UserRole;
   name?: string;
   institutionName?: string;
-  // Agregamos esto para saber si ya completó el test
   onboardingCompleted?: boolean;
-  // Esto es CRÍTICO: permite que el objeto tenga propiedades extra (como learningStyle) sin dar error
   [key: string]: any; 
 }
 
@@ -34,6 +32,8 @@ export interface Evento {
   time: string;
   capacity: number;
   attendees: number;
+  // Lista de usuarios inscritos
+  attendeeIds?: string[]; 
   type: 'visual' | 'auditivo' | 'kinestesico';
   mode: 'presencial' | 'virtual';
   organizer: string;
@@ -50,6 +50,8 @@ export interface Job {
   style: 'visual' | 'auditivo' | 'kinestesico';
   status: 'activo' | 'pausado' | 'borrador';
   applicants: number;
+  // Lista de usuarios postulados
+  applicantIds?: string[];
   postedDate: string;
   description?: string;
 }
