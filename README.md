@@ -21,17 +21,17 @@ El sistema está construido bajo un enfoque moderno y escalable:
 
 Para ejecutar el entorno de desarrollo en tu máquina local:
 
-1. Clona este repositorio:
 ```bash
+
+1. Clona este repositorio:
+
    git clone [https://github.com/Aggusttin/MindSync.git](https://github.com/Aggusttin/MindSync.git)
 
 2.Instala las dependencias del proyecto:
 
-```bash
    npm install
 
 3. Inicia el servidor de desarrollo de Vite:
 
-```bash
    npm run dev
 Desarrollador: Agustín Díaz Lallana
