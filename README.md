@@ -1,73 +1,37 @@
-# React + TypeScript + Vite
+# MindSync 🧠
+**Plataforma EdTech de Aprendizaje Colaborativo**
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+MindSync es una plataforma web interactiva y móvil (PWA) diseñada para optimizar la conformación de grupos de estudio en el ámbito universitario mediante diagnósticos pedagógicos[cite: 2]. Este proyecto fue desarrollado como Tesis Final para la titulación de Analista en Software[cite: 2].
 
-Currently, two official plugins are available:
+## 🚀 Características Principales
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+*   **Diagnóstico VARK:** Implementación de un test interactivo para identificar el estilo de aprendizaje predominante del estudiante (Visual, Auditivo, Kinestésico)[cite: 2].
+*   **Algoritmo de Emparejamiento:** Procesamiento en el backend que calcula puntuaciones de afinidad y sugiere grupos de estudio altamente compatibles[cite: 2].
+*   **Ecosistema Integrado:** Sistema con control de acceso basado en roles que conecta a estudiantes con recursos de estudio, eventos académicos de universidades y un portal de empleo corporativo[cite: 2].
 
-## React Compiler
+## 💻 Arquitectura y Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+El sistema está construido bajo un enfoque moderno y escalable:
 
-## Expanding the ESLint configuration
+*   **Frontend (PWA):** Interfaz dinámica y responsiva desarrollada con React.js[cite: 2], TypeScript y Vite.
+*   **Backend Serverless:** Infraestructura en la nube utilizando Node.js y Cloud Functions para garantizar alta disponibilidad y escalado automático[cite: 2].
+*   **Base de Datos:** Cloud Firestore (NoSQL) para la sincronización en tiempo real de perfiles de usuario, eventos, grupos y postulaciones laborales[cite: 2].
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## ⚙️ Instalación y Uso Local
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Para ejecutar el entorno de desarrollo en tu máquina local:
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+1. Clona este repositorio:
+```bash
+   git clone [https://github.com/Aggusttin/MindSync.git](https://github.com/Aggusttin/MindSync.git)
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+2.Instala las dependencias del proyecto:
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+```bash
+   npm install
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+3. Inicia el servidor de desarrollo de Vite:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+```bash
+   npm run dev
+Desarrollador: Agustín Díaz Lallana
